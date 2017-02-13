@@ -1,0 +1,6 @@
+# -- temporary build files -- #
+*/target
+
+# -- IDEA files -- #
+.idea
+*.iml
