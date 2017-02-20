@@ -1,27 +1,28 @@
-package uk.ac.aber.adk15.interface
+package uk.ac.aber.adk15.ui
 
 import java.net.URL
 import java.util.ResourceBundle
+import javafx.application.Application
 import javafx.fxml.{FXML, FXMLLoader, Initializable, JavaFXBuilderFactory}
 import javafx.scene.{Parent, Scene}
 import javafx.scene.layout.StackPane
 import javafx.stage.Stage
 
-object Application {
+object App {
 
   def main(args: Array[String]): Unit = {
-    Application.launch(classOf[Application], args: _*)
+    Application.launch(classOf[App], args: _*)
   }
 
 }
 
-class Application extends javafx.application.Application {
+class App extends javafx.application.Application {
 
   override def start(primaryStage: Stage): Unit = {
     primaryStage.setTitle("HelloWorld")
     val root = new StackPane()
     primaryStage.setScene(new Scene(root))
-    val page = FXMLLoader.load(classOf[Application].getResource("/skel.fxml"), null, new JavaFXBuilderFactory()).asInstanceOf[Parent]
+    val page = FXMLLoader.load(classOf[App].getResource("/skel.fxml"), null, new JavaFXBuilderFactory()).asInstanceOf[Parent]
     primaryStage.getScene.setRoot(page)
     primaryStage.sizeToScene()
     primaryStage.show()

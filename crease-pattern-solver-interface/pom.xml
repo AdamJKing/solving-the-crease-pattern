@@ -32,7 +32,7 @@
 					</descriptorRefs>
 					<archive>
 						<manifest>
-							<mainClass>uk.ac.aber.adk15.interface.Application</mainClass>
+							<mainClass>uk.ac.aber.adk15.ui.App</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -84,7 +84,7 @@
 			<plugin>
 				<groupId>org.scalatest</groupId>
 				<artifactId>scalatest-maven-plugin</artifactId>
-				<version>1.0-M2</version>
+				<version>1.0</version>
 				<configuration>
 					<reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
 					<junitxml>.</junitxml>
