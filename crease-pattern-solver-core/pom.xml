@@ -32,5 +32,10 @@
 			<artifactId>scalatest_${scala.version.major}</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.scala-graph</groupId>
+			<artifactId>graph-core_2.12</artifactId>
+			<version>1.11.4</version>
+		</dependency>
 	</dependencies>
 </project>
