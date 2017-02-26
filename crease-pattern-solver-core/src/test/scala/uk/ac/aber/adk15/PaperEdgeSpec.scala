@@ -9,8 +9,9 @@ class PaperEdgeSpec extends WordSpec with Matchers {
     "constructed using the same two points" should {
       "throw an EdgeException" in {
         val ex = intercept[IllegalArgumentException] {
-          MountainFold(OriginPoint, OriginPoint)
-          ValleyFold(OriginPoint, OriginPoint)
+          new PaperEdge[OriginPoint.type](OriginPoint, OriginPoint, new MountainFold)
+          new PaperEdge[OriginPoint.type](OriginPoint, OriginPoint, new ValleyFold)
+          new PaperEdge[OriginPoint.type](OriginPoint, OriginPoint, new HardEdge)
         }
 
         ex.toString should include("An edge cannot have zero length (start point and end point are the same!)")
