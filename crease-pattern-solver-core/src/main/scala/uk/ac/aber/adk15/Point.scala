@@ -1,16 +1,25 @@
 package uk.ac.aber.adk15
 
+/**
+  * Represents a simple X, Y coordinate.
+  *
+  * @param x the position on the X axis
+  * @param y the position on the Y axis
+  *
+  */
 final class Point(val x: Int, val y: Int) {
+
   def canEqual(a: Any): Boolean = a.isInstanceOf[Point]
 
   override def equals(that: Any): Boolean =
     that match {
-      case that: Point => that.canEqual(this) && that.x == that.x && that.y == that.y
+      case that: Point => that.canEqual(this) && that.x == this.x && that.y == this.y
     }
 
   override def toString: String = s"{$x, $y}"
 }
 
+/** Companion object for a Point */
 object Point {
   def apply(x: Int, y: Int): Point = new Point(x, y)
 

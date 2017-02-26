@@ -15,10 +15,23 @@ case class PaperEdge[+N](start: N, end: N, edgeType: PaperEdgeType)
   require(start != end, "An edge cannot have zero length (start point and end point are the same!)")
 }
 
+/**
+  * An abstract class for folds or edges, represents every type of connection you
+  * would reasonably expect in an Origami model.
+  */
 abstract class PaperEdgeType()
 
+/**
+  * Mountain type fold (/\)
+  */
 case class MountainFold() extends PaperEdgeType
 
+/**
+  * Valley type fold (\/)
+  */
 case class ValleyFold() extends PaperEdgeType
 
+/**
+  * A 'hard' edge represents the edge of the paper or a crease that has been folded.
+  */
 case class HardEdge() extends PaperEdgeType

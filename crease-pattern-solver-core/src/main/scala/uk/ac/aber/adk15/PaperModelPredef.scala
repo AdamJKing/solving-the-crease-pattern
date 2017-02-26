@@ -2,6 +2,10 @@ package uk.ac.aber.adk15
 
 import uk.ac.aber.adk15.PaperEdgePredef._
 
+/**
+  * Object containing useful constants with respect to the paper model.
+  *
+  */
 object PaperModelPredef {
   /**
     * Represents a blank piece of paper with no folds.
