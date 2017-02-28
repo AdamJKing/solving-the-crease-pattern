@@ -1,6 +1,6 @@
-package uk.ac.aber.adk15
+package uk.ac.aber.adk15.paper
 
-import uk.ac.aber.adk15.PaperEdgePredef._
+import uk.ac.aber.adk15.Point
 
 /**
   * Object containing useful constants with respect to the paper model.
@@ -22,9 +22,13 @@ object PaperModelPredef {
     *
     */
   val BlankPaper: PaperModel = PaperModel(
-    Point(0, 0) <> Point(1, 0),
-    Point(1, 0) <> Point(1, 1),
-    Point(1, 1) <> Point(0, 1),
-    Point(0, 1) <> Point(0, 0)
+    FoldedPaperEdge(Point(0, 0), Point(1, 0)),
+    FoldedPaperEdge(Point(1, 0), Point(1, 1)),
+    FoldedPaperEdge(Point(1, 1), Point(0, 1)),
+    FoldedPaperEdge(Point(0, 1), Point(0, 0))
   )
+
+  implicit class FoldedPaperModel(val paperModel: PaperModel) extends AnyVal {
+    @inline def <~~(paperEdge: PaperEdge[Point]): PaperModel = paperModel.fold(paperEdge)
+  }
 }
