@@ -15,35 +15,54 @@ import scalax.collection.immutable.Graph
   *
   */
 class PaperModel(creasePattern: Graph[Point, PaperEdge]) {
-  def fold(edge: UnfoldedPaperEdge[Point]): PaperModel = {
+
+  override def equals(that: Any): Boolean =
+    canEqual(that) && creasePattern.equals(that.asInstanceOf[this.type])
+
+  override def toString: String = creasePattern.toOuterEdges.toString
+
+  def canEqual(that: Any): Boolean = that.isInstanceOf[this.type]
+
+  def fold(edge: PaperEdge[Point]): PaperModel = {
 
     val creaseLine = getCrease(edge).get
-    val isOnLeft = (_: PaperEdge[Point]) map (_ compareTo(edge._1, edge._2)) map (_ > 0) reduce (_ && _)
+    val isOnLeft   = (_: PaperEdge[Point]) map (_ compareTo (edge._1, edge._2)) map (_ >= 0) reduce (_ && _)
 
-    val (toLeave, toFold) = (creasePattern -! creaseLine).toOuterEdges partition isOnLeft
-    val folded = toFold map {
-      case UnfoldedPaperEdge(start, end, foldType) =>
-        UnfoldedPaperEdge(start reflectedOver(edge._1, edge._2), end reflectedOver(edge._1, edge._2), foldType match {
-            // when we fold a piece of paper, all unfolded creases receive the inverse assignment
-          case MountainFoldType() => ValleyFoldType()
-          case ValleyFoldType() => MountainFoldType()
-        })
-      case FoldedPaperEdge(start, end) =>
-        FoldedPaperEdge(start reflectedOver(edge._1, edge._2), end reflectedOver(edge._1, edge._2))
-    }
+    val edges = creasePattern.toOuterEdges.map(
+      e =>
+        if (e == creaseLine) PaperEdge(e.start, e.end, e.foldType)
+        else if (isOnLeft(e)) rotateEdge(e)
+        else e)
 
-    // recollect modified nodes into final, new, crease pattern
-    PaperModel(Graph.from(Nil, toLeave) ++ Graph.from(Nil, folded) + creaseLine.crease)
+    PaperModel(Graph.from(edges.toOuterNodes, edges))
   }
 
-  protected def getCrease(crease: PaperEdge[Point]): Try[UnfoldedPaperEdge[Point]] = creasePattern find crease match {
-    case None =>
-      Failure(new IllegalArgumentException("Crease was not found in crease pattern, are you breaking the rules?"))
+  protected def getCrease(crease: PaperEdge[Point]): Try[PaperEdge[Point]] = {
+    creasePattern.toOuterEdges find (_ == crease) match {
+      case None =>
+        Failure(
+          new IllegalArgumentException(
+            "Crease was not found in crease pattern, are you breaking the rules?"))
 
-    case Some(_: FoldedPaperEdge[Point]) =>
-      Failure(new IllegalArgumentException("Cannot fold, it has already been folded."))
+      case Some(PaperEdge(_, _, CreasedFold)) =>
+        Failure(
+          new IllegalArgumentException("Anticipated crease was already folded in crease pattern."))
+      case Some(edge: PaperEdge[Point]) => Success(edge)
+    }
+  }
 
-    case Some(unfoldedPaperEdge: UnfoldedPaperEdge[Point]) => Success(unfoldedPaperEdge)
+  private def rotateEdge(edge: PaperEdge[Point]) = {
+    PaperEdge(
+      edge.start reflectedOver (edge._1, edge._2),
+      edge.end reflectedOver (edge._1, edge._2),
+      edge.foldType match {
+        // when we fold a piece of paper, all unfolded creases receive the inverse assignment
+        case MountainFold  => ValleyFold
+        case ValleyFold    => MountainFold
+        case CreasedFold   => CreasedFold
+        case PaperBoundary => PaperBoundary
+      }
+    )
   }
 }
 
@@ -51,13 +70,12 @@ class PaperModel(creasePattern: Graph[Point, PaperEdge]) {
   * Companion object for a paper model.
   */
 object PaperModel {
+
   /**
     * Constructs a new graph using the supplied folds.
     *
-    * @param edges a variable length list of folds to add to the model's pattern
     * @return a new paper model
     */
-  def apply(edges: PaperEdge[Point]*): PaperModel = new PaperModel(Graph.from(Nil, edges))
-
-  def apply(creasePattern: Graph[Point, PaperEdge]) = new PaperModel(creasePattern)
+  def apply(creasePattern: Graph[Point, PaperEdge]) =
+    new PaperModel(creasePattern)
 }

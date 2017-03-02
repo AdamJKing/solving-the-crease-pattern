@@ -1,6 +1,6 @@
 package uk.ac.aber.adk15.paper
 
-import scalax.collection.GraphEdge.{NodeProduct, UnDiEdge}
+import scalax.collection.GraphEdge.{EdgeCopy, NodeProduct, UnDiEdge}
 import scalax.collection.GraphPredef.OuterEdge
 
 /**
@@ -8,40 +8,37 @@ import scalax.collection.GraphPredef.OuterEdge
   *
   * This line is directionless, meaning `start` and `end` can be swapped arbitrarily.
   *
-  * @param start the starting point of the line
-  * @param end   the finishing point of the line
   */
-abstract class PaperEdge[+N](start: N, end: N)
-  extends UnDiEdge[N](NodeProduct(start, end))
-    with OuterEdge[N, PaperEdge] {
+case class PaperEdge[+N](start: N, end: N, foldType: FoldType)
+    extends UnDiEdge[N](NodeProduct(start, end))
+    with OuterEdge[N, PaperEdge]
+    with EdgeCopy[PaperEdge] {
 
-  override def isValidCustom: Boolean = super.isValidCustom && start != end
+  private def this(nodes: Product, foldType: FoldType) {
+    this(nodes.productElement(0).asInstanceOf[N],
+         nodes.productElement(1).asInstanceOf[N],
+         foldType)
+  }
+
+  override def isValidCustom: Boolean = start != end
 
   override def isValidCustomExceptionMessage: String =
-    super.isValidCustomExceptionMessage ++ "Crease has no length, start point and end point cannot be the same"
+    super.isValidCustomExceptionMessage +
+      "Edge has no length, start and end cannot be the same."
+
+  override def canEqual(that: Any): Boolean =
+    super.canEqual(that) &&
+      (that.isInstanceOf[this.type] || this.getClass.isAssignableFrom(that.getClass))
+
+  override def copy[NN](newNodes: Product) = new PaperEdge[NN](newNodes, foldType)
 }
 
-case class FoldedPaperEdge[+N](start: N, end: N) extends PaperEdge(start, end)
+sealed trait FoldType
 
-case class UnfoldedPaperEdge[+N](start: N, end: N, foldType: FoldType) extends PaperEdge(start, end) {
+case object MountainFold extends FoldType
 
-  def crease: FoldedPaperEdge[N] = FoldedPaperEdge[N](start, end)
-}
+case object ValleyFold extends FoldType
 
-/**
-  * TODO: Reword
-  * An abstract class for folds or edges, represents every type of connection you
-  * would reasonably expect in an Origami model.
-  */
-abstract class FoldType()
+case object CreasedFold extends FoldType
 
-/**
-  * Mountain type fold (/\)
-  */
-case class MountainFoldType() extends FoldType()
-
-/**
-  * Valley type fold (\/)
-  */
-case class ValleyFoldType() extends FoldType()
-
+case object PaperBoundary extends FoldType

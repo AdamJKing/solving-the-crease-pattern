@@ -1,5 +1,7 @@
 package uk.ac.aber.adk15
 
+import scala.util.Try
+
 /**
   * Represents a simple X, Y coordinate.
   *
@@ -7,22 +9,16 @@ package uk.ac.aber.adk15
   * @param y the position on the Y axis
   *
   */
-final class Point(val x: Int, val y: Int) {
+case class Point(x: Int, y: Int) {
 
   def canEqual(a: Any): Boolean = a.isInstanceOf[Point]
 
-  override def equals(that: Any): Boolean =
-    that match {
-      case that: Point => that.canEqual(this) && that.x == this.x && that.y == this.y
-    }
+  override def equals(that: Any): Boolean = canEqual(that) && {
+    val point = that.asInstanceOf[Point]
+    point.x == x && point.y == y
+  }
 
   override def toString: String = s"{$x, $y}"
-}
-
-/** Companion object for a Point */
-object Point {
-  def apply(x: Int, y: Int): Point = new Point(x, y)
-
 }
 
 object PointImplicits {
@@ -33,6 +29,7 @@ object PointImplicits {
     * @param p the point to be operated on, as reference
     */
   implicit class PointArithmetic(p: Point) {
+
     /**
       * The equation
       *
@@ -51,15 +48,12 @@ object PointImplicits {
       ((p.x - start.x) * (end.y - start.y)) - ((p.y - start.y) * (end.x - start.x))
     }
 
+    def dotProduct(a: Point, b: Point): Int = (p.x * b.x) + (p.y * b.y)
+
     // http://stackoverflow.com/questions/3306838/algorithm-for-reflecting-a-point-across-a-line
     def reflectedOver(start: Point, end: Point): Point = {
-      val m = (start.y - end.y) / (start.x - end.x)
-      val c = (-m * start.x) + start.y
-
-      val (x, y): (Int, Int) = (p.x, p.y)
-      val d = (x + (y - c) * m) / (1 + m ^ 2)
-      Point((2 * d) - x, (2 * d * m) - y + (2 * c))
+      val dotProducts = Try(dotProduct(start, end) / dotProduct(end, end)).getOrElse(0) * 2
+      Point(dotProducts * (start.x - end.x), dotProducts * (start.y - end.y))
     }
   }
-
 }
