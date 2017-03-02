@@ -18,6 +18,8 @@
         <scala.version.minor>1</scala.version.minor>
         <scala.version>${scala.version.major}.${scala.version.minor}</scala.version>
         <scalatest.version>3.0.1</scalatest.version>
+        <scala.logging.version>3.5.0</scala.logging.version>
+        <logback.classic.version>1.2.1</logback.classic.version>
     </properties>
 
     <dependencyManagement>
@@ -27,7 +29,17 @@
                 <artifactId>scala-library</artifactId>
                 <version>${scala.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>com.typesafe.scala-logging</groupId>
+                <artifactId>scala-logging_2.12</artifactId>
+                <version>${scala.logging.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <scope>runtime</scope>
+                <version>${logback.classic.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_${scala.version.major}</artifactId>

@@ -1,5 +1,6 @@
 package uk.ac.aber.adk15.paper
 
+import com.typesafe.scalalogging.Logger
 import uk.ac.aber.adk15.Point
 import uk.ac.aber.adk15.PointImplicits._
 
@@ -16,6 +17,8 @@ import scalax.collection.immutable.Graph
   */
 class PaperModel(creasePattern: Graph[Point, PaperEdge]) {
 
+  val logger = Logger[this.type]
+
   override def equals(that: Any): Boolean =
     canEqual(that) && creasePattern.equals(that.asInstanceOf[this.type])
 
@@ -24,15 +27,24 @@ class PaperModel(creasePattern: Graph[Point, PaperEdge]) {
   def canEqual(that: Any): Boolean = that.isInstanceOf[this.type]
 
   def fold(edge: PaperEdge[Point]): PaperModel = {
+    logger debug s"Preparing to commence a fold for $edge"
 
     val creaseLine = getCrease(edge).get
     val isOnLeft   = (_: PaperEdge[Point]) map (_ compareTo (edge._1, edge._2)) map (_ >= 0) reduce (_ && _)
 
     val edges = creasePattern.toOuterEdges.map(
       e =>
-        if (e == creaseLine) PaperEdge(e.start, e.end, e.foldType)
-        else if (isOnLeft(e)) rotateEdge(e)
-        else e)
+        if (e == creaseLine) {
+          logger debug "found the same crease, folding it"
+          PaperEdge(e.start, e.end, CreasedFold)
+        } else if (isOnLeft(e)) {
+          logger debug "found leftward edge, rotating!"
+          logger debug s"$edge is on the left."
+          rotateEdge(e)
+        } else {
+          logger debug "found rightward crease, nothing to do here"
+          e
+        })
 
     PaperModel(Graph.from(edges.toOuterNodes, edges))
   }

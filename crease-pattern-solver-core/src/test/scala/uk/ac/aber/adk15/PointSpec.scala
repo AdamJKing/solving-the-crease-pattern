@@ -10,8 +10,8 @@ class PointSpec extends FlatSpec with Matchers {
   }
 
   "A point" should "be correctly comparable to a line" in {
-    Point(0, 1) compareTo (Point(0, 0), Point(1, 1)) should be < 0
-    Point(1, 0) compareTo (Point(0, 0), Point(1, 1)) should be > 0
+    Point(0, 1) compareTo (Point(0, 0), Point(1, 1)) should be < 0.0
+    Point(1, 0) compareTo (Point(0, 0), Point(1, 1)) should be > 0.0
     Point(0, 0) compareTo (Point(0, 0), Point(1, 1)) should be
     0
   }

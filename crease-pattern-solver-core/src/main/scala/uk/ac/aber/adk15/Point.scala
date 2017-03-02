@@ -9,7 +9,7 @@ import scala.util.Try
   * @param y the position on the Y axis
   *
   */
-case class Point(x: Int, y: Int) {
+case class Point(x: Double, y: Double) {
 
   def canEqual(a: Any): Boolean = a.isInstanceOf[Point]
 
@@ -18,7 +18,7 @@ case class Point(x: Int, y: Int) {
     point.x == x && point.y == y
   }
 
-  override def toString: String = s"{$x, $y}"
+  override def toString = s"{$x, $y}"
 }
 
 object PointImplicits {
@@ -44,16 +44,20 @@ object PointImplicits {
       * @param end   the second point on the line
       * @return -1 or 1 denoting which side of the line it is on, 0 if the point lies on the line
       */
-    def compareTo(start: Point, end: Point): Int = {
+    def compareTo(start: Point, end: Point): Double = {
       ((p.x - start.x) * (end.y - start.y)) - ((p.y - start.y) * (end.x - start.x))
     }
 
-    def dotProduct(a: Point, b: Point): Int = (p.x * b.x) + (p.y * b.y)
+    def dotProduct(a: Point, b: Point): Double = (p.x * b.x) + (p.y * b.y)
 
-    // http://stackoverflow.com/questions/3306838/algorithm-for-reflecting-a-point-across-a-line
     def reflectedOver(start: Point, end: Point): Point = {
-      val dotProducts = Try(dotProduct(start, end) / dotProduct(end, end)).getOrElse(0) * 2
-      Point(dotProducts * (start.x - end.x), dotProducts * (start.y - end.y))
+      val m = (end.y - start.y) / (end.x - start.x)
+      val b = (m * start.x) - start.y
+
+      val d = (p.x + (p.y - b) * m) / (1 + Math.pow(m, 2))
+      val (x, y) = ((2 * d) - p.x, (2 * d * m) - p.y + (2 * b))
+
+      Point(x, y)
     }
   }
 }
