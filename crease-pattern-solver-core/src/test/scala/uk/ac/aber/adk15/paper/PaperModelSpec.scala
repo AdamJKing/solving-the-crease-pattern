@@ -2,7 +2,7 @@ package uk.ac.aber.adk15.paper
 
 import org.scalatest.{FlatSpec, Matchers}
 import uk.ac.aber.adk15.Point
-import uk.ac.aber.adk15.paper.PaperModelPredef._
+import uk.ac.aber.adk15.paper.PaperModelHelpers._
 
 import scalax.collection.immutable.Graph
 
@@ -10,7 +10,7 @@ class PaperModelSpec extends FlatSpec with Matchers {
 
   "The paper model" should "be capable of being folded" in {
 
-    // GIVEN
+    // given
     val paperModel = PaperModel(
       Graph(
         PaperEdge(Point(0, 0), Point(100, 0), PaperBoundary),
@@ -20,10 +20,10 @@ class PaperModelSpec extends FlatSpec with Matchers {
         PaperEdge(Point(0, 100), Point(100, 0), MountainFold)
       ))
 
-    // WHEN
+    // when
     val foldedPaperModel = paperModel <~~ PaperEdge(Point(0, 100), Point(100, 0), MountainFold)
 
-    // THEN
+    // then
     foldedPaperModel should be(
       PaperModel(Graph(
         PaperEdge(Point(100, 100), Point(100, 0), PaperBoundary),
@@ -33,6 +33,7 @@ class PaperModelSpec extends FlatSpec with Matchers {
   }
 
   "Graphs with undirected edges" should "equal each other" in {
+    // given
     val a = PaperModel(
       Graph(
         PaperEdge(Point(100, 0), Point(0, 100), PaperBoundary)
@@ -43,6 +44,7 @@ class PaperModelSpec extends FlatSpec with Matchers {
         PaperEdge(Point(0, 100), Point(100, 0), PaperBoundary)
       ))
 
+    // then
     a should equal(b)
   }
 }

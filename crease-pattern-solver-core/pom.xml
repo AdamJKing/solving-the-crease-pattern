@@ -64,6 +64,7 @@
 						<arg>-deprecation</arg>
 						<arg>-dependencyfile</arg>
 						<arg>${project.build.directory}/.scala_dependencies</arg>
+						<arg>-opt-warnings</arg>
 					</args>
 					<compilerPlugins>
 						<compilerPlugin>
