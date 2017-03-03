@@ -4,3 +4,5 @@
 # -- IDEA files -- #
 .idea
 *.iml
+
+pom.xml.versionsBackup
