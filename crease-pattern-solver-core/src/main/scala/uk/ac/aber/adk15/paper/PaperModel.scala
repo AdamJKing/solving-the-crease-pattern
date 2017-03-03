@@ -15,36 +15,40 @@ import scalax.collection.immutable.Graph
   * @param creasePattern a graph describing the series of folds or edges that exist in the model
   *
   */
-class PaperModel(creasePattern: Graph[Point, PaperEdge]) {
+class PaperModel(val creasePattern: Graph[Point, PaperEdge]) {
 
-  val logger = Logger[this.type]
+  private val logger = Logger[this.type]
 
   override def equals(that: Any): Boolean =
-    canEqual(that) && creasePattern.equals(that.asInstanceOf[this.type])
+    canEqual(that) && creasePattern == that.asInstanceOf[PaperModel].creasePattern
 
   override def toString: String = creasePattern.toOuterEdges.toString
 
-  def canEqual(that: Any): Boolean = that.isInstanceOf[this.type]
+  def canEqual(that: Any): Boolean = that.isInstanceOf[PaperModel]
 
   def fold(edge: PaperEdge[Point]): PaperModel = {
     logger debug s"Preparing to commence a fold for $edge"
 
     val creaseLine = getCrease(edge).get
-    val isOnLeft   = (_: PaperEdge[Point]) map (_ compareTo (edge._1, edge._2)) map (_ >= 0) reduce (_ && _)
+    val isOnLeft = (e: PaperEdge[Point]) => {
+      val startLocation = e.start compareTo (edge.start, edge.end)
+      val endLocation   = e.end compareTo (edge.start, edge.end)
 
-    val edges = creasePattern.toOuterEdges.map(
-      e =>
-        if (e == creaseLine) {
-          logger debug "found the same crease, folding it"
-          PaperEdge(e.start, e.end, CreasedFold)
-        } else if (isOnLeft(e)) {
-          logger debug "found leftward edge, rotating!"
-          logger debug s"$edge is on the left."
-          rotateEdge(e)
-        } else {
-          logger debug "found rightward crease, nothing to do here"
-          e
-        })
+      (startLocation + endLocation) > 0
+    }
+
+    val edges = creasePattern.toOuterEdges.map(e =>
+      if (e == creaseLine) {
+        logger debug "found the same crease, folding it"
+        PaperEdge(e.start, e.end, CreasedFold)
+      } else if (isOnLeft(e)) {
+        logger debug "found leftward edge, rotating!"
+        logger debug s"$e is on the left."
+        rotateEdge(e, edge)
+      } else {
+        logger debug "found rightward crease, nothing to do here"
+        e
+    })
 
     PaperModel(Graph.from(edges.toOuterNodes, edges))
   }
@@ -63,10 +67,10 @@ class PaperModel(creasePattern: Graph[Point, PaperEdge]) {
     }
   }
 
-  private def rotateEdge(edge: PaperEdge[Point]) = {
+  private def rotateEdge(edge: PaperEdge[Point], axis: PaperEdge[Point]) = {
     PaperEdge(
-      edge.start reflectedOver (edge._1, edge._2),
-      edge.end reflectedOver (edge._1, edge._2),
+      edge.start reflectedOver (axis._1, axis._2),
+      edge.end reflectedOver (axis._1, axis._2),
       edge.foldType match {
         // when we fold a piece of paper, all unfolded creases receive the inverse assignment
         case MountainFold  => ValleyFold

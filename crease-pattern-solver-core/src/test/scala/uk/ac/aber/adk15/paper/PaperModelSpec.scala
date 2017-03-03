@@ -25,11 +25,24 @@ class PaperModelSpec extends FlatSpec with Matchers {
 
     // THEN
     foldedPaperModel should be(
-      PaperModel(
-        Graph(
-          PaperEdge(Point(0, 0), Point(100, 0), PaperBoundary),
-          PaperEdge(Point(100, 0), Point(0, 100), PaperBoundary),
-          PaperEdge(Point(0, 100), Point(0, 0), PaperBoundary)
-        )))
+      PaperModel(Graph(
+        PaperEdge(Point(100, 100), Point(100, 0), PaperBoundary),
+        PaperEdge(Point(100, 0), Point(0, 100), CreasedFold),
+        PaperEdge(Point(0, 100), Point(100, 100), PaperBoundary)
+      )))
+  }
+
+  "Graphs with undirected edges" should "equal each other" in {
+    val a = PaperModel(
+      Graph(
+        PaperEdge(Point(100, 0), Point(0, 100), PaperBoundary)
+      ))
+
+    val b = PaperModel(
+      Graph(
+        PaperEdge(Point(0, 100), Point(100, 0), PaperBoundary)
+      ))
+
+    a should equal(b)
   }
 }

@@ -28,17 +28,38 @@ case class PaperEdge[+N](start: N, end: N, foldType: FoldType)
 
   override def canEqual(that: Any): Boolean =
     super.canEqual(that) &&
-      (that.isInstanceOf[this.type] || this.getClass.isAssignableFrom(that.getClass))
+      (that.isInstanceOf[PaperEdge[N]] || this.getClass.isAssignableFrom(that.getClass))
+
+  override def equals(that: Any): Boolean = {
+    canEqual(that) && {
+      val edge = that.asInstanceOf[PaperEdge[N]]
+
+      val matchesStart = map(_ == edge.start) reduce (_ ^ _)
+      val matchesEnd   = map(_ == edge.end) reduce (_ ^ _)
+
+      matchesStart && matchesEnd && foldType == edge.foldType
+    }
+  }
 
   override def copy[NN](newNodes: Product) = new PaperEdge[NN](newNodes, foldType)
+
+  override def toString = s"$start $foldType $end"
 }
 
 sealed trait FoldType
 
-case object MountainFold extends FoldType
+case object MountainFold extends FoldType {
+  override def toString = "/\\"
+}
 
-case object ValleyFold extends FoldType
+case object ValleyFold extends FoldType {
+  override def toString = "\\/"
+}
 
-case object CreasedFold extends FoldType
+case object CreasedFold extends FoldType {
+  override def toString = "~~"
+}
 
-case object PaperBoundary extends FoldType
+case object PaperBoundary extends FoldType {
+  override def toString = "---"
+}

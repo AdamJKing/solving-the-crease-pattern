@@ -1,6 +1,6 @@
 package uk.ac.aber.adk15
 
-import scala.util.Try
+import scala.math.{abs, pow}
 
 /**
   * Represents a simple X, Y coordinate.
@@ -48,16 +48,42 @@ object PointImplicits {
       ((p.x - start.x) * (end.y - start.y)) - ((p.y - start.y) * (end.x - start.x))
     }
 
-    def dotProduct(a: Point, b: Point): Double = (p.x * b.x) + (p.y * b.y)
+    def dotProduct(p2: Point): Double = (p.x * p2.x) + (p.y * p2.y)
 
+    def -(p2: Point): Point = Point(p.x - p2.x, p.y - p2.y)
+
+    def *(constant: Double): Point = constant * p
+
+    /**
+      * Returns the reflection the given point over the line defined by { start, end }.
+      * If given a point on the line, will return the same point.
+      *
+      * given (x, y) and y = ax + c
+      * d := (x + a(y - c) / (1 + a**2)
+      *
+      * x' = 2d - x
+      * y' = 2da - y + 2c
+      *
+      * Source:
+      * http://stackoverflow.com/questions/3306838/algorithm-for-reflecting-a-point-across-a-line
+      *
+      * @param start the beginning of the line
+      * @param end the end of the line
+      * @return the reflected point
+      */
     def reflectedOver(start: Point, end: Point): Point = {
       val m = (end.y - start.y) / (end.x - start.x)
-      val b = (m * start.x) - start.y
+      val c = start.y - (m * start.x)
 
-      val d = (p.x + (p.y - b) * m) / (1 + Math.pow(m, 2))
-      val (x, y) = ((2 * d) - p.x, (2 * d * m) - p.y + (2 * b))
+      // if the point is on the line, we need only return the point
+      if (p.y == (m * p.x + c)) return p
 
-      Point(x, y)
+      val d = abs((p.x + (p.y - c) * m) / (1 + pow(m, 2)))
+      Point(2 * d - p.x, 2 * d * m - p.y + 2 * c)
     }
+  }
+
+  implicit class Num2PointArithmetic(constant: Double) {
+    def *(point: Point): Point = Point(constant * point.x, constant * point.y)
   }
 }
