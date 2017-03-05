@@ -48,4 +48,13 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>build-all</id>
+            <modules>
+                <module>crease-pattern-solver-model-viewer</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

@@ -14,9 +14,11 @@ import scalax.collection.immutable.Graph
   *
   * @param creasePattern a graph describing the series of folds or edges that exist in the model
   */
-class PaperModel(val creasePattern: Graph[Point, PaperEdge]) {
+class PaperModel(private val creasePattern: Graph[Point, PaperEdge]) {
 
   private val logger = Logger[this.type]
+
+  val edges: Traversable[PaperEdge[Point]] = creasePattern.toOuterEdges
 
   override def equals(that: Any): Boolean =
     canEqual(that) && creasePattern == that.asInstanceOf[PaperModel].creasePattern

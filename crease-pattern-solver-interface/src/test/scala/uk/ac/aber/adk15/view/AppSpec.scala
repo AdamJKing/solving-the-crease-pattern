@@ -1,9 +1,8 @@
-package uk.ac.aber.adk15.ui
+package uk.ac.aber.adk15.view
 
 import org.scalatest.{FlatSpec, Matchers}
 
 import scalafx.application.Platform
-
 
 /**
   * Created by adam on 13/02/17.
