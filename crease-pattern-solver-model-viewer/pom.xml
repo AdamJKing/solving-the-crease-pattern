@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>crease-pattern-solver</artifactId>
         <groupId>uk.ac.aber.adk15</groupId>
         <version>1.4-SNAPSHOT</version>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>crease-pattern-solver-interface</artifactId>
-    <version>1.4-SNAPSHOT</version>
-    <name>crease-pattern-solver-interface</name>
-    <packaging>jar</packaging>
+    <artifactId>crease-pattern-solver-model-viewer</artifactId>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -33,7 +31,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>uk.ac.aber.adk15.view.Application</mainClass>
+                            <mainClass>uk.ac.aber.adk15.model.viewer.view.Application</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -136,5 +134,4 @@
             <version>0.3</version>
         </dependency>
     </dependencies>
-
 </project>

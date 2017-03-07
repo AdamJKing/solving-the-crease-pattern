@@ -1,4 +1,4 @@
-package uk.ac.aber.adk15.ui
+package uk.ac.aber.adk15.view
 
 import java.io.IOException
 
@@ -14,12 +14,10 @@ object Application extends JFXApp {
 
     title.value = "Crease Pattern Solver"
 
-    width = 600
-    height = 450
-
     scene = Try(classOf[App] getResource "/application_skeleton.fxml") match {
       case Success(res) => new Scene(FXMLView(res, NoDependencyResolver))
-      case Failure(e) => throw new IOException("ERROR: Could not load application_skeleton.fxml", e)
+      case Failure(e) =>
+        throw new IOException("ERROR: Could not load application_skeleton.fxml", e)
     }
   }
 }

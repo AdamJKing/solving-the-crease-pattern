@@ -68,7 +68,7 @@ object PointHelpers {
       * @param end the end of the line
       * @return the reflected point
       */
-    @inline final def reflectedOver(start: Point, end: Point): Point = {
+    final def reflectedOver(start: Point, end: Point): Point = {
       lazy val m = (end.y - start.y) / (end.x - start.x)
       lazy val c = start.y - (m * start.x)
 
