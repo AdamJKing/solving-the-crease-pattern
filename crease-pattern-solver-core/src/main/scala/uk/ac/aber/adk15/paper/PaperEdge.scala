@@ -53,15 +53,10 @@ case class PaperEdge[+N](start: N, end: N, foldType: FoldType)
     * @param that the object to check for equality
     * @return if they are the same paper edge
     */
-  override def equals(that: Any): Boolean = {
-    that match {
-      case paperEdge: PaperEdge[N] =>
-        val matchesStart = paperEdge.start == start || paperEdge.start == end
-        val matchesEnd   = paperEdge.end == start || paperEdge.end == end
-        matchesStart && matchesEnd && foldType == paperEdge.foldType
-
-      case _ => false
-    }
+  override def equals(that: Any): Boolean = that match {
+    case paperEdge: PaperEdge[N] =>
+      paperEdge.toSet == this.toSet && paperEdge.foldType == this.foldType
+    case _ => false
   }
 
   /**

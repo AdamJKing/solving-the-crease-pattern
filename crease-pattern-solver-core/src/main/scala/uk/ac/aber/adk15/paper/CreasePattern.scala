@@ -14,15 +14,15 @@ class CreasePattern(private val layers: Seq[Layer]) extends Foldable {
   override def fold(edge: PaperEdge[Point]): CreasePattern = {
     validateLegalEdge(edge)
 
-    @inline
-    def isOnLeft(e: PaperEdge[Point])  = (e map (_ compareTo (edge.start, edge.end))).sum > 0
-    def isOnRight(e: PaperEdge[Point]) = (e map (_ compareTo (edge.start, edge.end))).sum < 0
+    @inline def isOnLeft(e: PaperEdge[Point]) =
+      (e map (_ compareTo (edge.start, edge.end))).sum > 0
 
-    val creasedEdge = edge.crease
+    @inline def isOnRight(e: PaperEdge[Point]) =
+      (e map (_ compareTo (edge.start, edge.end))).sum < 0
 
     val folded = layers.foldRight(List[Layer]())((layer, acc) => {
-      val static = (layer filter isOnRight) + creasedEdge
-      val folded = (layer withFilter isOnLeft map { rotateEdge(_, axis = edge) }) + creasedEdge
+      val static = (layer filter isOnRight) + edge.crease
+      val folded = (layer withFilter isOnLeft map { rotateEdge(_, axis = edge) }) + edge.crease
 
       logger debug s"$folded"
       Layer(static) +: acc :+ Layer(folded)
@@ -36,7 +36,7 @@ class CreasePattern(private val layers: Seq[Layer]) extends Foldable {
     case _                    => false
   }
 
-  override def toString: String = layers.toString
+  override def toString: String = s"{ ${layers mkString ","} }"
 
   private def validateLegalEdge(edge: PaperEdge[Point]) = {
     edges find (_ == edge) match {
@@ -48,12 +48,14 @@ class CreasePattern(private val layers: Seq[Layer]) extends Foldable {
   }
 
   private def rotateEdge(edge: PaperEdge[Point], axis: PaperEdge[Point]) = PaperEdge(
-    edge.start reflectedOver (axis._1, axis._2),
-    edge.end reflectedOver (axis._1, axis._2),
+    edge.start reflectedOver (axis.start, axis.end),
+    edge.end reflectedOver (axis.start, axis.end),
     edge.foldType match {
       // when we fold a piece of paper, all unfolded creases receive the inverse assignment
-      case MountainFold  => ValleyFold
-      case ValleyFold    => MountainFold
+      case MountainFold => ValleyFold
+      case ValleyFold   => MountainFold
+
+      // those already creased, or a physical boundary, will not change when folded
       case CreasedFold   => CreasedFold
       case PaperBoundary => PaperBoundary
     }
