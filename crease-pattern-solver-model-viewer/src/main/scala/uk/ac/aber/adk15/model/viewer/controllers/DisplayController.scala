@@ -2,13 +2,13 @@ package uk.ac.aber.adk15.model.viewer.controllers
 
 import com.typesafe.scalalogging.Logger
 import uk.ac.aber.adk15.Point
+import uk.ac.aber.adk15.paper.CreasePatternPredef.Layer
 import uk.ac.aber.adk15.paper._
 
 import scalafx.scene.canvas.Canvas
 import scalafx.scene.layout.Pane
 import scalafx.scene.paint.Color._
 import scalafxml.core.macros.sfxml
-import scalax.collection.immutable.Graph
 
 @sfxml
 class DisplayController(private val modelView: Pane) {
@@ -27,11 +27,13 @@ class DisplayController(private val modelView: Pane) {
   graphicsContext.stroke = Black
   graphicsContext.lineWidth = 2.5d
 
-  private val myGraph = PaperModel(
-    Graph(
+  private val myGraph = CreasePattern(
+    Layer(
       PaperEdge(Point(0, 0), Point(100, 0), PaperBoundary),
       PaperEdge(Point(0, 100), Point(0, 0), PaperBoundary),
-      PaperEdge(Point(0, 100), Point(100, 0), CreasedFold)
+      PaperEdge(Point(0, 100), Point(100, 0), MountainFold),
+      PaperEdge(Point(0, 100), Point(100, 100), PaperBoundary),
+      PaperEdge(Point(100, 0), Point(100, 100), PaperBoundary)
     ))
 
   private lazy val xCeiling = myGraph.edges
