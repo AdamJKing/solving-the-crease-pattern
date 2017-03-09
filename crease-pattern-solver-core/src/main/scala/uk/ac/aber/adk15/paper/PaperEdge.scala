@@ -47,30 +47,16 @@ case class PaperEdge[+N](start: N, end: N, foldType: FoldType)
       " Edge has no length, start and end cannot be the same."
 
   /**
-    * Convenience method for checking that two objects are capable of being equal.
-    *
-    * @param that the object to test for equivalence
-    * @return if the object is capable of equalling this
-    */
-  override def canEqual(that: Any): Boolean =
-    super.canEqual(that) &&
-      (that.isInstanceOf[PaperEdge[N]] || this.getClass.isAssignableFrom(that.getClass))
-
-  /**
     * Check that two edges are equal, the start and edge nodes should be interchangeable
     * so this method is directionless when it compares if two edges are the same.
     *
     * @param that the object to check for equality
     * @return if they are the same paper edge
     */
-  override def equals(that: Any): Boolean = {
-    canEqual(that) && {
-      val edge         = that.asInstanceOf[PaperEdge[N]]
-      val matchesStart = edge.start == start || edge.start == end
-      val matchesEnd   = edge.end == start || edge.end == end
-
-      matchesStart && matchesEnd && foldType == edge.foldType
-    }
+  override def equals(that: Any): Boolean = that match {
+    case paperEdge: PaperEdge[N] =>
+      paperEdge.toSet == this.toSet && paperEdge.foldType == this.foldType
+    case _ => false
   }
 
   /**
@@ -83,6 +69,8 @@ case class PaperEdge[+N](start: N, end: N, foldType: FoldType)
   override def copy[NN](newNodes: Product) = new PaperEdge[NN](newNodes, foldType)
 
   override def toString = s"$start $foldType $end"
+
+  def crease = new PaperEdge[N](start, end, CreasedFold)
 }
 
 /**
