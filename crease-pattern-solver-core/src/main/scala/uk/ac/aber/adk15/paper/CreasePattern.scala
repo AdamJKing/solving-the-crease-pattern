@@ -9,7 +9,7 @@ class CreasePattern(private val layers: Seq[Layer]) extends Foldable {
 
   private val logger = Logger[CreasePattern]
 
-  private lazy val edges: Traversable[PaperEdge[Point]] = layers reduce (_ ++ _)
+  lazy val edges: Traversable[PaperEdge[Point]] = layers reduce (_ ++ _)
 
   override def fold(edge: PaperEdge[Point]): CreasePattern = {
     validateLegalEdge(edge)
