@@ -9,20 +9,19 @@ class CreasePattern(private val layers: Seq[Layer]) extends Foldable {
 
   private val logger = Logger[CreasePattern]
 
-  private val edges: Traversable[PaperEdge[Point]] =
-    (layers foldLeft List[PaperEdge[Point]]())(_ ++ _)
+  private val edges: Set[PaperEdge[Point]] = layers reduce (_ ++ _)
 
   override def fold(edge: PaperEdge[Point]): CreasePattern = {
     validateLegalEdge(edge)
 
     @inline def isOnLeft(e: PaperEdge[Point]) =
-      (e map (p => p compareTo (edge.start, edge.end))).sum > 0
+      (e map (_ compareTo (edge.start, edge.end))).sum > 0
 
     @inline def isOnRight(e: PaperEdge[Point]) =
-      (e map (p => p compareTo (edge.start, edge.end))).sum < 0
+      (e map (_ compareTo (edge.start, edge.end))).sum < 0
 
     @inline def isOnCentre(e: PaperEdge[Point]) =
-      e forall (p => (p compareTo (edge.start, edge.end)) == 0)
+      (e map (_ compareTo (edge.start, edge.end))).sum == 0
 
     val foldedCreasePattern =
       (layers foldRight List[Layer]())((layer, acc) => {
@@ -31,8 +30,12 @@ class CreasePattern(private val layers: Seq[Layer]) extends Foldable {
         val static = (layer filter isOnRight) ++ creasedEdges
         val folded = (layer withFilter isOnLeft map { rotateEdge(_, axis = edge) }) ++ creasedEdges
 
-        val newLayers = if (static.nonEmpty) acc :+ static else acc
-        if (folded.nonEmpty) folded +: newLayers else newLayers
+        (folded.headOption, static.headOption) match {
+          case (Some(_), Some(_)) => folded +: acc :+ static
+          case (Some(_), None)    => folded +: acc
+          case (None, Some(_))    => acc :+ static
+          case (None, None)       => acc
+        }
       })
 
     logger debug s"$foldedCreasePattern"
