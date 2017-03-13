@@ -70,7 +70,11 @@ case class PaperEdge[+N](start: N, end: N, foldType: FoldType)
 
   override def toString = s"$start $foldType $end"
 
-  def crease = new PaperEdge[N](start, end, CreasedFold)
+  def crease: PaperEdge[N] = foldType match {
+    case PaperBoundary             => this
+    case MountainFold | ValleyFold => new PaperEdge[N](start, end, CreasedFold)
+    case CreasedFold               => throw IllegalCreaseException(this)
+  }
 }
 
 /**

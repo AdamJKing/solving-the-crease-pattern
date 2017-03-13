@@ -51,4 +51,70 @@ class CreasePatternSpec extends FlatSpec with Matchers {
     a should equal(b)
     b should equal(c)
   }
+
+  "A crease pattern with multiple layered folds" should "be foldable" in {
+    // given
+    val creasePattern = CreasePattern(
+      Layer(
+        Point(0, 0) -- Point(50, 0),
+        Point(50, 0) -- Point(100, 0),
+        Point(0, 0) -- Point(0, 50),
+        Point(0, 50) -- Point(0, 100),
+        Point(0, 100) -- Point(100, 100),
+        Point(100, 0) -- Point(100, 100),
+        Point(0, 0) \/ Point(25, 25),
+        Point(25, 25) \/ Point(50, 50),
+        Point(50, 50) \/ Point(100, 100),
+        Point(0, 100) \/ Point(50, 50),
+        Point(50, 50) /\ Point(100, 0),
+        Point(0, 50) /\ Point(25, 25),
+        Point(25, 25) \/ Point(50, 0)
+      )
+    )
+
+    // when
+    val creases = List(Point(50, 50) \/ Point(100, 100),
+                       Point(0, 50) /\ Point(25, 25),
+                       Point(0, 100) \/ Point(50, 50))
+
+    val foldedCreasePattern = creases.foldLeft(creasePattern)(_ <~~ _)
+
+    // then
+    foldedCreasePattern.size should be(6)
+    foldedCreasePattern should be(
+      CreasePattern(
+        Layer(
+          Point(75, 75) ~~ Point(50, 100),
+          Point(50, 50) -- Point(50, 100),
+          Point(50, 50) ~~ Point(75, 75)
+        ),
+        Layer(
+          Point(50, 100) ~~ Point(75, 75),
+          Point(50, 50) -- Point(50, 100),
+          Point(50, 50) ~~ Point(75, 75)
+        ),
+        Layer(
+          Point(50, 100) ~~ Point(75, 75),
+          Point(0, 100) ~~ Point(50, 50),
+          Point(50, 100) -- Point(0, 100),
+          Point(75, 75) ~~ Point(50, 50)
+        ),
+        Layer(
+          Point(75, 75) ~~ Point(50, 100),
+          Point(50, 50) ~~ Point(0, 100),
+          Point(50, 100) -- Point(0, 100),
+          Point(75, 75) ~~ Point(50, 50)
+        ),
+        Layer(
+          Point(50, 50) ~~ Point(100, 100),
+          Point(50, 50) ~~ Point(0, 100),
+          Point(0, 100) -- Point(100, 100)
+        ),
+        Layer(
+          Point(50, 50) ~~ Point(100, 100),
+          Point(0, 100) ~~ Point(50, 50),
+          Point(0, 100) -- Point(100, 100)
+        )
+      ))
+  }
 }

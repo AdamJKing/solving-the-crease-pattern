@@ -9,7 +9,7 @@ class CreasePattern(private val layers: Seq[Layer]) extends Foldable {
 
   private val logger = Logger[CreasePattern]
 
-  lazy val edges: Traversable[PaperEdge[Point]] = layers reduce (_ ++ _)
+  private val edges: Set[PaperEdge[Point]] = layers reduce (_ ++ _)
 
   override def fold(edge: PaperEdge[Point]): CreasePattern = {
     validateLegalEdge(edge)
@@ -20,15 +20,26 @@ class CreasePattern(private val layers: Seq[Layer]) extends Foldable {
     @inline def isOnRight(e: PaperEdge[Point]) =
       (e map (_ compareTo (edge.start, edge.end))).sum < 0
 
-    val folded = layers.foldRight(List[Layer]())((layer, acc) => {
-      val static = (layer filter isOnRight) + edge.crease
-      val folded = (layer withFilter isOnLeft map { rotateEdge(_, axis = edge) }) + edge.crease
+    @inline def isOnCentre(e: PaperEdge[Point]) =
+      (e map (_ compareTo (edge.start, edge.end))).sum == 0
 
-      logger debug s"$folded"
-      Layer(static) +: acc :+ Layer(folded)
-    })
+    val foldedCreasePattern =
+      (layers foldRight List[Layer]())((layer, acc) => {
+        val creasedEdges = layer withFilter isOnCentre map (_.crease)
 
-    new CreasePattern(folded)
+        val static = (layer filter isOnRight) ++ creasedEdges
+        val folded = (layer withFilter isOnLeft map { rotateEdge(_, axis = edge) }) ++ creasedEdges
+
+        (folded.headOption, static.headOption) match {
+          case (Some(_), Some(_)) => folded +: acc :+ static
+          case (Some(_), None)    => folded +: acc
+          case (None, Some(_))    => acc :+ static
+          case (None, None)       => acc
+        }
+      })
+
+    logger debug s"$foldedCreasePattern"
+    new CreasePattern(foldedCreasePattern)
   }
 
   override def equals(obj: Any): Boolean = obj match {
@@ -36,13 +47,14 @@ class CreasePattern(private val layers: Seq[Layer]) extends Foldable {
     case _                    => false
   }
 
-  override def toString: String = s"{ ${layers mkString ","} }"
+  override def toString = s"{ ${layers mkString ","} }"
+
+  def size: Int = layers.length
 
   private def validateLegalEdge(edge: PaperEdge[Point]) = {
     edges find (_ == edge) match {
       case Some(PaperEdge(_, _, PaperBoundary)) => throw IllegalCreaseException(edge)
       case Some(PaperEdge(_, _, CreasedFold))   => throw EdgeAlreadyCreasedException(edge)
-      case None                                 => throw IllegalCreaseException(edge)
       case _                                    => true
     }
   }
