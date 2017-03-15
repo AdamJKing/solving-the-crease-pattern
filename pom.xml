@@ -20,6 +20,7 @@
         <scalatest.version>3.0.1</scalatest.version>
         <scala.logging.version>3.5.0</scala.logging.version>
         <logback.classic.version>1.2.1</logback.classic.version>
+        <scala.guice.version>4.1.0</scala.guice.version>
     </properties>
 
     <dependencyManagement>
@@ -45,6 +46,16 @@
                 <artifactId>scalatest_${scala.version.major}</artifactId>
                 <version>${scalatest.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.codingwell</groupId>
+                <artifactId>scala-guice_2.12</artifactId>
+                <version>${scala.guice.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.scalafx</groupId>
+                <artifactId>scalafxml-guice-sfx8_2.12</artifactId>
+                <version>0.3</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -2,6 +2,7 @@ package uk.ac.aber.adk15.paper
 
 import org.scalatest.{FlatSpec, Matchers}
 import uk.ac.aber.adk15.Point
+import uk.ac.aber.adk15.paper.CreasePatternPredef.Constants.ModelConstants.MultiLayeredFoldedPaper
 import uk.ac.aber.adk15.paper.CreasePatternPredef.Helpers._
 import uk.ac.aber.adk15.paper.CreasePatternPredef.Layer
 import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
@@ -81,40 +82,6 @@ class CreasePatternSpec extends FlatSpec with Matchers {
 
     // then
     foldedCreasePattern.size should be(6)
-    foldedCreasePattern should be(
-      CreasePattern(
-        Layer(
-          Point(75, 75) ~~ Point(50, 100),
-          Point(50, 50) -- Point(50, 100),
-          Point(50, 50) ~~ Point(75, 75)
-        ),
-        Layer(
-          Point(50, 100) ~~ Point(75, 75),
-          Point(50, 50) -- Point(50, 100),
-          Point(50, 50) ~~ Point(75, 75)
-        ),
-        Layer(
-          Point(50, 100) ~~ Point(75, 75),
-          Point(0, 100) ~~ Point(50, 50),
-          Point(50, 100) -- Point(0, 100),
-          Point(75, 75) ~~ Point(50, 50)
-        ),
-        Layer(
-          Point(75, 75) ~~ Point(50, 100),
-          Point(50, 50) ~~ Point(0, 100),
-          Point(50, 100) -- Point(0, 100),
-          Point(75, 75) ~~ Point(50, 50)
-        ),
-        Layer(
-          Point(50, 50) ~~ Point(100, 100),
-          Point(50, 50) ~~ Point(0, 100),
-          Point(0, 100) -- Point(100, 100)
-        ),
-        Layer(
-          Point(50, 50) ~~ Point(100, 100),
-          Point(0, 100) ~~ Point(50, 50),
-          Point(0, 100) -- Point(100, 100)
-        )
-      ))
+    foldedCreasePattern should be(MultiLayeredFoldedPaper)
   }
 }
