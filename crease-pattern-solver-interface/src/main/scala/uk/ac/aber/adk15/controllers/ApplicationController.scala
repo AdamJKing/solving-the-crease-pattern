@@ -4,6 +4,7 @@ import com.typesafe.scalalogging.Logger
 import uk.ac.aber.adk15.executors.FoldExecutorFactory
 import uk.ac.aber.adk15.model.ConfigurationService
 import uk.ac.aber.adk15.paper.CreasePatternPredef.Constants.ModelConstants.BlankPaper
+import uk.ac.aber.adk15.view.ConfigurationView
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -14,7 +15,7 @@ import scalafxml.core.macros.sfxml
 class ApplicationController(private val configurationService: ConfigurationService,
                             private val foldExecutorFactory: FoldExecutorFactory) {
 
-  val logger: Logger = Logger[ApplicationController]
+  private val logger: Logger = Logger[ApplicationController]
 
   def start(): Unit = {
     val config       = configurationService.configuration
@@ -27,8 +28,7 @@ class ApplicationController(private val configurationService: ConfigurationServi
   }
 
   def configure(): Unit = {
-    logger debug "Configuring!"
-
+    ConfigurationView.show()
   }
 
   def loadCreasePattern(): Unit = {}

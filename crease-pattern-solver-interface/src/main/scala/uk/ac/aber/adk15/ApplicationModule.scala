@@ -10,4 +10,5 @@ class ApplicationModule extends AbstractModule with ScalaModule {
     bind[ConfigurationService].to[ConfigurationServiceImpl]
     bind[FoldExecutorFactory].to[FoldExecutorFactoryImpl]
   }
+
 }

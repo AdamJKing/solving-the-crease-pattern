@@ -21,15 +21,12 @@
 
     <Label text="Executor Type" GridPane.columnIndex="0" GridPane.rowIndex="1" />
 
-    <ComboBox fx:id="executorTypeSelector" GridPane.columnIndex="1" GridPane.rowIndex="1">
-        <items>
-        </items>
-    </ComboBox>
+    <ComboBox fx:id="executorTypeSelector" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
     <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="0" GridPane.rowIndex="2">
         <buttons>
-            <Button mnemonicParsing="false" onAction="#configureApplication" text="Save"/>
-            <Button mnemonicParsing="false" onAction="#closeConfigurationView" text="Cancel"/>
+            <Button mnemonicParsing="false" text="Save" onAction="#configureApplication" />
+            <Button mnemonicParsing="false" text="Cancel" onAction="#cancelConfiguration" />
         </buttons>
     </ButtonBar>
 </GridPane>

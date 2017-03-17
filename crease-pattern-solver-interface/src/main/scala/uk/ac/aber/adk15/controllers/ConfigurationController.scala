@@ -1,6 +1,8 @@
 package uk.ac.aber.adk15.controllers
 
+import com.typesafe.scalalogging.Logger
 import uk.ac.aber.adk15.model.ConfigurationConstants.ExecutorType
+import uk.ac.aber.adk15.model.ConfigurationConstants.ExecutorType.ExecutorType
 import uk.ac.aber.adk15.model.{Config, ConfigurationService}
 import uk.ac.aber.adk15.view.ConfigurationView
 
@@ -10,29 +12,30 @@ import scalafxml.core.macros.sfxml
 
 trait ConfigurationController {
   def configureApplication(): Unit
-  def openConfigurationView(): Unit
-  def closeConfigurationView(): Unit
+  def cancelConfiguration(): Unit
 }
 
 @sfxml
 class ConfigurationControllerImpl(private val maxThreads: Spinner[Int],
-                                  private val executorTypeSelector: ComboBox[String],
+                                  private val executorTypeSelector: ComboBox[ExecutorType],
                                   private val configurationService: ConfigurationService)
     extends ConfigurationController {
 
+  private val logger = Logger[ConfigurationController]
+
+  executorTypeSelector.items set ObservableBuffer(ExecutorType.values toSeq)
+  executorTypeSelector.getSelectionModel.selectFirst()
+
   override def configureApplication(): Unit = {
-    closeConfigurationView()
-    configurationService.configuration =
-      Config(ExecutorType withName executorTypeSelector.getValue, maxThreads.getValue)
+    val config = Config(executorTypeSelector.getValue, maxThreads.getValue)
+    configurationService.configuration = config
+    logger info s"Configuring application with $config"
+
+    ConfigurationView.hide()
   }
 
-  override def openConfigurationView(): Unit = {
-    populateExecutorTypeSelector(ExecutorType.values.map { _.toString } toSeq)
-    ConfigurationView.show()
-  }
-  override def closeConfigurationView(): Unit = ConfigurationView.hide()
-
-  private def populateExecutorTypeSelector(values: Seq[String]) = {
-    executorTypeSelector.items set ObservableBuffer(values)
+  override def cancelConfiguration(): Unit = {
+    logger info "Cancelling configuration; nothing changed."
+    ConfigurationView.hide()
   }
 }
