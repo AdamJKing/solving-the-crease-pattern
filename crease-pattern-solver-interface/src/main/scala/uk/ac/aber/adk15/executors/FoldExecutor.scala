@@ -1,10 +1,8 @@
-package uk.ac.aber.adk15
+package uk.ac.aber.adk15.executors
 
 import uk.ac.aber.adk15.paper.CreasePattern
 import uk.ac.aber.adk15.paper.CreasePatternPredef.Fold
-import uk.ac.aber.adk15.view.ProgressDisplayPane
 
-trait Executor { this: ProgressDisplayPane =>
-
+trait FoldExecutor {
   def findFoldOrder(creasePattern: CreasePattern): List[Fold]
 }

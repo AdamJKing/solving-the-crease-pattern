@@ -16,7 +16,8 @@
                     onAction="#start" text="Start" VBox.vgrow="ALWAYS"/>
             <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Load Crease Pattern"
                     VBox.vgrow="ALWAYS"/>
-            <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Configure" VBox.vgrow="ALWAYS" onAction="#configure"/>
+            <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Configure" VBox.vgrow="ALWAYS"
+                    onAction="#configure"/>
         </VBox>
     </SplitPane>
 </SplitPane>

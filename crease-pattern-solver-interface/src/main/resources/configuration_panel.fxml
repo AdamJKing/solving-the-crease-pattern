@@ -10,6 +10,7 @@
         <Insets bottom="10" left="10" right="10" top="10"/>
 
     </padding>
+
     <Label text="Max. Threads" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
 
     <Spinner fx:id="maxThreads" GridPane.columnIndex="1" GridPane.rowIndex="0">
@@ -18,8 +19,14 @@
         </valueFactory>
     </Spinner>
 
-    <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
+    <Label text="Executor Type" GridPane.columnIndex="0" GridPane.rowIndex="1" />
 
+    <ComboBox fx:id="executorTypeSelector" GridPane.columnIndex="1" GridPane.rowIndex="1">
+        <items>
+        </items>
+    </ComboBox>
+
+    <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="0" GridPane.rowIndex="2">
         <buttons>
             <Button mnemonicParsing="false" onAction="#configureApplication" text="Save"/>
             <Button mnemonicParsing="false" onAction="#closeConfigurationView" text="Cancel"/>
