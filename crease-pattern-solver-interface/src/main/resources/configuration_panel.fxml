@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <GridPane hgap="10" vgap="10" xmlns="http://javafx.com/javafx/8.0.101" xmlns:fx="http://javafx.com/fxml/1"
-          fx:controller="uk.ac.aber.adk15.controllers.ConfigurationControllerImpl">
+          fx:controller="uk.ac.aber.adk15.controllers.ui.ConfigurationViewController">
 
     <padding>
         <Insets bottom="10" left="10" right="10" top="10"/>

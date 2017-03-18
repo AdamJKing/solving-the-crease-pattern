@@ -1,35 +1,37 @@
 package uk.ac.aber.adk15.controllers
 
+import com.google.inject.Inject
 import com.typesafe.scalalogging.Logger
+import uk.ac.aber.adk15.controllers.ui.ApplicationViewController
 import uk.ac.aber.adk15.executors.FoldExecutorFactory
 import uk.ac.aber.adk15.model.ConfigurationService
 import uk.ac.aber.adk15.paper.CreasePatternPredef.Constants.ModelConstants.BlankPaper
-import uk.ac.aber.adk15.view.ConfigurationView
+import uk.ac.aber.adk15.paper.CreasePatternPredef.Fold
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.Promise
 import scala.util.{Failure, Success}
-import scalafxml.core.macros.sfxml
 
-@sfxml
-class ApplicationController(private val configurationService: ConfigurationService,
-                            private val foldExecutorFactory: FoldExecutorFactory) {
+trait ApplicationController {
+  def start(): Unit
+}
 
-  private val logger: Logger = Logger[ApplicationController]
+class ApplicationControllerImpl @Inject()(private val configurationService: ConfigurationService,
+                                          private val foldExecutorFactory: FoldExecutorFactory)
+    extends ApplicationController {
+
+  private val logger = Logger[ApplicationViewController]
 
   def start(): Unit = {
     val config       = configurationService.configuration
     val foldExecutor = foldExecutorFactory createFactoryFrom config
 
-    Future { foldExecutor findFoldOrder BlankPaper } onComplete {
-      case Success(foldOrder) => logger info s"Process complete with foldOrder=$foldOrder"
-      case Failure(ex)        => throw ex
+    val foldOrder = Promise[List[Fold]]
+    foldOrder success { foldExecutor findFoldOrder BlankPaper }
+
+    foldOrder.future onComplete {
+      case Success(result) => logger info s"Process complete with foldOrder=$result"
+      case Failure(ex)     => throw ex
     }
   }
-
-  def configure(): Unit = {
-    ConfigurationView.show()
-  }
-
-  def loadCreasePattern(): Unit = {}
 }

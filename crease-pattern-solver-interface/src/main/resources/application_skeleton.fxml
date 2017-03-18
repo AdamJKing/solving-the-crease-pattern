@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.VBox?>
 <SplitPane dividerPositions="0.29431438127090304" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
            minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.101"
-           xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.ac.aber.adk15.controllers.ApplicationController">
+           xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.ac.aber.adk15.controllers.ui.ApplicationViewController">
     <SplitPane dividerPositions="0.7939698492462312" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0">
         <TitledPane text="Iteration Information"/>
         <VBox spacing="10.0">

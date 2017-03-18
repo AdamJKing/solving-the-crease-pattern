@@ -1,7 +1,6 @@
-package uk.ac.aber.adk15.view
+package uk.ac.aber.adk15
 
 import org.scalatest.{FlatSpec, Matchers}
-import uk.ac.aber.adk15.Application
 
 import scalafx.application.Platform
 
