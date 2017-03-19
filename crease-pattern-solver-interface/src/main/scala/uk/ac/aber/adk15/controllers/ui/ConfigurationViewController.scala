@@ -2,8 +2,8 @@ package uk.ac.aber.adk15.controllers.ui
 
 import uk.ac.aber.adk15.controllers.ConfigurationController
 import uk.ac.aber.adk15.model.Config
-import uk.ac.aber.adk15.model.ConfigurationConstants.ExecutorType
-import uk.ac.aber.adk15.model.ConfigurationConstants.ExecutorType.ExecutorType
+import uk.ac.aber.adk15.model.ConfigConstants.ExecutorType
+import uk.ac.aber.adk15.model.ConfigConstants.ExecutorType.ExecutorType
 import uk.ac.aber.adk15.view.ConfigurationView
 
 import scalafx.collections.ObservableBuffer

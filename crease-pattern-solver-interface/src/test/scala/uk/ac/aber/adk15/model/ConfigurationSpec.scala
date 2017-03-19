@@ -1,7 +1,7 @@
 package uk.ac.aber.adk15.model
 
 import uk.ac.aber.adk15.CommonSpec
-import uk.ac.aber.adk15.model.ConfigurationConstants._
+import uk.ac.aber.adk15.model.ConfigConstants._
 
 class ConfigurationSpec extends CommonSpec {
 

@@ -1,8 +1,9 @@
 package uk.ac.aber.adk15.executors
 
+import uk.ac.aber.adk15.CommonSpec
 import uk.ac.aber.adk15.paper.CreasePatternPredef.Constants.ModelConstants.BlankPaper
 import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
-import uk.ac.aber.adk15.{CommonSpec, Point}
+import uk.ac.aber.adk15.paper.Point
 
 class PreDesignatedFoldExecutorSpec extends CommonSpec {
 

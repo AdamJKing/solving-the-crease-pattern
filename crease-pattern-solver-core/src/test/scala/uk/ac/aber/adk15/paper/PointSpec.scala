@@ -1,7 +1,7 @@
-package uk.ac.aber.adk15
+package uk.ac.aber.adk15.paper
 
 import org.scalatest.{FlatSpec, Matchers}
-import uk.ac.aber.adk15.PointHelpers._
+import uk.ac.aber.adk15.paper.PointHelpers._
 
 class PointSpec extends FlatSpec with Matchers {
 

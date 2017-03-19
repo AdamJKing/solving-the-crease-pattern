@@ -1,15 +1,17 @@
 package uk.ac.aber.adk15.paper
 
 import com.typesafe.scalalogging.Logger
-import uk.ac.aber.adk15.Point
-import uk.ac.aber.adk15.PointHelpers._
 import uk.ac.aber.adk15.paper.CreasePatternPredef.Layer
+import uk.ac.aber.adk15.paper.PointHelpers._
 
 class CreasePattern(private val layers: Seq[Layer]) extends Foldable {
 
   private val logger = Logger[CreasePattern]
 
   private val edges: Set[PaperEdge[Point]] = layers reduce (_ ++ _)
+
+  val creases: Seq[Layer] = layers map (_ filter (fold =>
+    fold.foldType == MountainFold || fold.foldType == ValleyFold))
 
   override def fold(edge: PaperEdge[Point]): CreasePattern = {
     validateLegalEdge(edge)

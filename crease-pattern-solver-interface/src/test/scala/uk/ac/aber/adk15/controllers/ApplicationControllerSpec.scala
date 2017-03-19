@@ -6,7 +6,7 @@ import org.mockito.Mock
 import org.mockito.Mockito._
 import uk.ac.aber.adk15.CommonSpec
 import uk.ac.aber.adk15.executors.{FoldExecutor, FoldExecutorFactory}
-import uk.ac.aber.adk15.model.ConfigurationConstants.DefaultConfig
+import uk.ac.aber.adk15.model.ConfigConstants.DefaultConfig
 import uk.ac.aber.adk15.model.{Config, ConfigurationService}
 import uk.ac.aber.adk15.paper.CreasePattern
 

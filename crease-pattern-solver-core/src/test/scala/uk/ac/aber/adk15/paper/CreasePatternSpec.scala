@@ -1,7 +1,7 @@
 package uk.ac.aber.adk15.paper
 
 import org.scalatest.{FlatSpec, Matchers}
-import uk.ac.aber.adk15.Point
+import uk.ac.aber.adk15.paper.CommonTestConstants._
 import uk.ac.aber.adk15.paper.CreasePatternPredef.Constants.ModelConstants.MultiLayeredFoldedPaper
 import uk.ac.aber.adk15.paper.CreasePatternPredef.Helpers._
 import uk.ac.aber.adk15.paper.CreasePatternPredef.Layer
@@ -12,14 +12,7 @@ class CreasePatternSpec extends FlatSpec with Matchers {
   "The crease pattern" should "be capable of being folded" in {
 
     // given
-    val creasePattern = CreasePattern(
-      Layer(
-        Point(0, 0) -- Point(100, 0),
-        Point(100, 0) -- Point(100, 100),
-        Point(100, 100) -- Point(0, 100),
-        Point(0, 100) -- Point(0, 0),
-        Point(0, 100) /\ Point(100, 0)
-      ))
+    val creasePattern = FlatCreasePattern
 
     // when
     val foldedCreasePattern = creasePattern <~~ Point(0, 100) /\ Point(100, 0)
@@ -55,23 +48,7 @@ class CreasePatternSpec extends FlatSpec with Matchers {
 
   "A crease pattern with multiple layered folds" should "be foldable" in {
     // given
-    val creasePattern = CreasePattern(
-      Layer(
-        Point(0, 0) -- Point(50, 0),
-        Point(50, 0) -- Point(100, 0),
-        Point(0, 0) -- Point(0, 50),
-        Point(0, 50) -- Point(0, 100),
-        Point(0, 100) -- Point(100, 100),
-        Point(100, 0) -- Point(100, 100),
-        Point(0, 0) \/ Point(25, 25),
-        Point(25, 25) \/ Point(50, 50),
-        Point(50, 50) \/ Point(100, 100),
-        Point(0, 100) \/ Point(50, 50),
-        Point(50, 50) /\ Point(100, 0),
-        Point(0, 50) /\ Point(25, 25),
-        Point(25, 25) \/ Point(50, 0)
-      )
-    )
+    val creasePattern = LayeredCreasePattern
 
     // when
     val creases = List(Point(50, 50) \/ Point(100, 100),

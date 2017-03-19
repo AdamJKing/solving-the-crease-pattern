@@ -1,7 +1,7 @@
 package uk.ac.aber.adk15.executors
 
 import uk.ac.aber.adk15.model.Config
-import uk.ac.aber.adk15.model.ConfigurationConstants.ExecutorType._
+import uk.ac.aber.adk15.model.ConfigConstants.ExecutorType._
 
 trait FoldExecutorFactory {
   def createFactoryFrom(config: Config): FoldExecutor

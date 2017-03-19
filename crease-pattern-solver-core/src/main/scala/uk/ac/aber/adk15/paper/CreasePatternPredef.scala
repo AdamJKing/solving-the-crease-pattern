@@ -1,6 +1,5 @@
 package uk.ac.aber.adk15.paper
 
-import uk.ac.aber.adk15.Point
 import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
 
 object CreasePatternPredef {

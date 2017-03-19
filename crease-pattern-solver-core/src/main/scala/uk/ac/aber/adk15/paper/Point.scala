@@ -1,4 +1,4 @@
-package uk.ac.aber.adk15
+package uk.ac.aber.adk15.paper
 
 import scala.math.{abs, pow}
 
