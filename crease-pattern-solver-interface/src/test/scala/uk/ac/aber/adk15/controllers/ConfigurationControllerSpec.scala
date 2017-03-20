@@ -4,7 +4,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.scalatest.BeforeAndAfterAll
 import uk.ac.aber.adk15.CommonSpec
-import uk.ac.aber.adk15.model.ConfigurationConstants.DefaultConfig
+import uk.ac.aber.adk15.model.ConfigConstants.DefaultConfig
 import uk.ac.aber.adk15.model.{Config, ConfigurationService}
 
 class ConfigurationControllerSpec extends CommonSpec with BeforeAndAfterAll {

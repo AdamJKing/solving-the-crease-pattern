@@ -1,9 +1,9 @@
 package uk.ac.aber.adk15.model
 
-import uk.ac.aber.adk15.model.ConfigurationConstants.ExecutorType.ExecutorType
-import uk.ac.aber.adk15.model.ConfigurationConstants._
+import uk.ac.aber.adk15.model.ConfigConstants.ExecutorType.ExecutorType
+import uk.ac.aber.adk15.model.ConfigConstants._
 
-object ConfigurationConstants {
+object ConfigConstants {
 
   object ExecutorType extends Enumeration {
     type ExecutorType = Value

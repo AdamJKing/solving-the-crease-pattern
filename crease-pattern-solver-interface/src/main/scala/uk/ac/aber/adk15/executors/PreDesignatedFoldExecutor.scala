@@ -1,10 +1,9 @@
 package uk.ac.aber.adk15.executors
 import com.typesafe.scalalogging.Logger
-import uk.ac.aber.adk15.Point
-import uk.ac.aber.adk15.paper.CreasePattern
 import uk.ac.aber.adk15.paper.CreasePatternPredef.Helpers._
 import uk.ac.aber.adk15.paper.CreasePatternPredef.{Fold, Layer}
 import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
+import uk.ac.aber.adk15.paper.{CreasePattern, Point}
 
 class PreDesignatedFoldExecutor extends FoldExecutor {
 

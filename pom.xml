@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>uk.ac.aber.adk15</groupId>
     <artifactId>crease-pattern-solver</artifactId>
-    <version>1.5-SNAPSHOT</version>
+    <version>1.6-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>crease-pattern-solver</name>
 
@@ -62,7 +62,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-all</artifactId>
-                <version>2.0.2</version>
+                <version>1.10.19</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

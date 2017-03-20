@@ -1,7 +1,6 @@
 package uk.ac.aber.adk15.paper
 
 import org.scalatest.{FlatSpec, Matchers}
-import uk.ac.aber.adk15.Point
 import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
 
 class PaperEdgeSpec extends FlatSpec with Matchers {
