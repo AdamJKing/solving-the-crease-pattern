@@ -1,7 +1,7 @@
 package uk.ac.aber.adk15.paper
 
 import org.scalatest.{FlatSpec, Matchers}
-import uk.ac.aber.adk15.paper.PointHelpers._
+import uk.ac.aber.adk15.paper.Point.Helpers._
 
 class PointSpec extends FlatSpec with Matchers {
 
@@ -25,5 +25,17 @@ class PointSpec extends FlatSpec with Matchers {
 
     val pointB = Point(0, 0) reflectedOver (Point(100, 0), Point(0, -100))
     pointB should be(Point(100, -100))
+
+    val pointC = Point(0, 50) reflectedOver (Point(50, 0), Point(50, 100))
+    pointC should be(Point(100, 50))
+
+    val pointD = Point(50, 0) reflectedOver (Point(0, 50), Point(100, 50))
+    pointD should be(Point(50, 100))
+  }
+
+  "Calculating the gradient between two points" should "be safe and correct" in {
+    Point(0, 0) gradientTo Point(10, 10) shouldBe 1
+    Point(0, 0) gradientTo Point(0, 10) shouldBe Double.PositiveInfinity
+    Point(0, 0) gradientTo Point(10, 0) shouldBe 0
   }
 }

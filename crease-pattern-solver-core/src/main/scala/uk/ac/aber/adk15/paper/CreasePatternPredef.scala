@@ -3,15 +3,6 @@ package uk.ac.aber.adk15.paper
 import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
 
 object CreasePatternPredef {
-
-  type Layer = Set[PaperEdge[Point]]
-  type Fold  = PaperEdge[Point]
-
-  object Layer {
-    def apply(edges: PaperEdge[Point]*): Layer     = edges.toSet
-    def apply(edges: Set[PaperEdge[Point]]): Layer = edges
-  }
-
   object Constants {
 
     object ModelConstants {
@@ -30,7 +21,7 @@ object CreasePatternPredef {
         * 0,1        1,1
         *
         */
-      val BlankPaper: CreasePattern = CreasePattern from
+      val BlankPaper: Foldable = CreasePattern from
         (
           Point(0, 0) -- Point(1, 0),
           Point(1, 0) -- Point(1, 1),
@@ -38,35 +29,35 @@ object CreasePatternPredef {
           Point(0, 1) -- Point(0, 0)
       )
 
-      val MultiLayeredFoldedPaper: CreasePattern = CreasePattern(
-        Layer(
+      val MultiLayeredFoldedPaper: Foldable = CreasePattern(
+        Set[Fold](
           Point(75, 75) ~~ Point(50, 100),
           Point(50, 50) -- Point(50, 100),
           Point(50, 50) ~~ Point(75, 75)
         ),
-        Layer(
+        Set[Fold](
           Point(50, 100) ~~ Point(75, 75),
           Point(50, 50) -- Point(50, 100),
           Point(50, 50) ~~ Point(75, 75)
         ),
-        Layer(
+        Set[Fold](
           Point(50, 100) ~~ Point(75, 75),
           Point(0, 100) ~~ Point(50, 50),
           Point(50, 100) -- Point(0, 100),
           Point(75, 75) ~~ Point(50, 50)
         ),
-        Layer(
+        Set[Fold](
           Point(75, 75) ~~ Point(50, 100),
           Point(50, 50) ~~ Point(0, 100),
           Point(50, 100) -- Point(0, 100),
           Point(75, 75) ~~ Point(50, 50)
         ),
-        Layer(
+        Set[Fold](
           Point(50, 50) ~~ Point(100, 100),
           Point(50, 50) ~~ Point(0, 100),
           Point(0, 100) -- Point(100, 100)
         ),
-        Layer(
+        Set[Fold](
           Point(50, 50) ~~ Point(100, 100),
           Point(0, 100) ~~ Point(50, 50),
           Point(0, 100) -- Point(100, 100)
@@ -78,8 +69,8 @@ object CreasePatternPredef {
 
   object Helpers {
 
-    implicit class FoldedCreasePattern(val paperModel: CreasePattern) extends AnyVal {
-      @inline def <~~(paperEdge: PaperEdge[Point]): CreasePattern = paperModel fold paperEdge
+    implicit class FoldedCreasePattern(val paperModel: Foldable) extends AnyVal {
+      @inline def <~~(paperEdge: Fold): Foldable = paperModel fold paperEdge
     }
 
   }

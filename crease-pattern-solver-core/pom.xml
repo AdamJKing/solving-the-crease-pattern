@@ -122,11 +122,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.scala-graph</groupId>
-            <artifactId>graph-core_2.12</artifactId>
-            <version>1.11.4</version>
-        </dependency>
-        <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
             <artifactId>scala-logging_2.12</artifactId>
         </dependency>

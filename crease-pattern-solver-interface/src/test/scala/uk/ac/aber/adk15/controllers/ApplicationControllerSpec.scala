@@ -5,27 +5,32 @@ import org.mockito.Matchers.any
 import org.mockito.Mock
 import org.mockito.Mockito.verify
 import uk.ac.aber.adk15.CommonSpec
-import uk.ac.aber.adk15.executors.{FoldExecutor, FoldExecutorFactory}
+import uk.ac.aber.adk15.executors.FoldExecutor
 import uk.ac.aber.adk15.model.ConfigConstants.DefaultConfig
-import uk.ac.aber.adk15.model.{Config, ConfigurationService}
-import uk.ac.aber.adk15.paper.CreasePattern
+import uk.ac.aber.adk15.model.ConfigurationService
+import uk.ac.aber.adk15.paper.{CreasePattern, Fold}
+import uk.ac.aber.adk15.services.FoldSelectionService
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class ApplicationControllerSpec extends CommonSpec {
 
-  @Mock private var configurationService: ConfigurationService = _
-  @Mock private var foldExecutorFactory: FoldExecutorFactory   = _
-  @Mock private var foldExecutor: FoldExecutor                 = _
+  @Mock private var configurationService: ConfigurationService  = _
+  @Mock private var foldExecutor: FoldExecutor                  = _
+  @Mock private var foldSelectionService: FoldSelectionService  = _
+  @Mock private implicit var executionContext: ExecutionContext = _
+
+  @Mock private var futureList: Future[Option[List[Fold]]] = _
 
   private var applicationController: ApplicationController = _
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    given(foldExecutor findFoldOrder any[CreasePattern]) willReturn List.empty
-    given(foldExecutorFactory createFactoryFrom any[Config]) willReturn foldExecutor
+    given(foldExecutor findFoldOrder any[CreasePattern]) willReturn futureList
 
     applicationController =
-      new ApplicationControllerImpl(configurationService, foldExecutorFactory)
+      new ApplicationControllerImpl(configurationService, foldSelectionService)
   }
 
   "When started the application" should "use the configuration from the config service" in {
@@ -39,22 +44,9 @@ class ApplicationControllerSpec extends CommonSpec {
     verify(configurationService).configuration
   }
 
-  "When started the application" should "generate the appropriate executor from the factory" in {
-    // given
-    given(configurationService.configuration) willReturn DefaultConfig
-
-    // when
-    applicationController.start()
-
-    // then
-    val configCaptor = captor[Config]
-    verify(foldExecutorFactory) createFactoryFrom (configCaptor capture)
-    configCaptor.getValue shouldBe DefaultConfig
-  }
-
   "The application" should "successfully find a fold order if there are no issues" in {
     // given
-    given(foldExecutor findFoldOrder any[CreasePattern]) willReturn List.empty
+    given(foldExecutor findFoldOrder any[CreasePattern]) willReturn futureList
 
     // when
     applicationController.start()

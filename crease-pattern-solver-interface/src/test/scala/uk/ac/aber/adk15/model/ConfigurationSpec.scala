@@ -5,14 +5,12 @@ import uk.ac.aber.adk15.model.ConfigConstants._
 
 class ConfigurationSpec extends CommonSpec {
 
-  private val ExampleExecutorType = ExecutorType.PreDesignated
-
   "The max threads config" should "be set to min if max threads set below min" in {
     // given
     val invalidMaxThreads = -20
 
     // when
-    val config = Config(ExampleExecutorType, invalidMaxThreads)
+    val config = Config(invalidMaxThreads)
 
     // then
     config.maxThreads should not be invalidMaxThreads
@@ -24,7 +22,7 @@ class ConfigurationSpec extends CommonSpec {
     val invalidMaxThreads = 300
 
     // when
-    val config = Config(ExampleExecutorType, invalidMaxThreads)
+    val config = Config(invalidMaxThreads)
 
     // then
     config.maxThreads should not be invalidMaxThreads
@@ -36,7 +34,7 @@ class ConfigurationSpec extends CommonSpec {
     val validMaxThreads = 8
 
     // when
-    val config = Config(ExampleExecutorType, validMaxThreads)
+    val config = Config(validMaxThreads)
 
     // then
     config.maxThreads shouldBe validMaxThreads

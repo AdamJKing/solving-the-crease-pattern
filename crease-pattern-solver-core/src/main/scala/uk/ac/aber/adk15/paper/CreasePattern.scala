@@ -1,32 +1,33 @@
 package uk.ac.aber.adk15.paper
 
 import com.typesafe.scalalogging.Logger
-import uk.ac.aber.adk15.paper.CreasePatternPredef.Layer
-import uk.ac.aber.adk15.paper.PointHelpers._
+import uk.ac.aber.adk15.paper.Point.Helpers._
 
-class CreasePattern(private val layers: Seq[Layer]) extends Foldable {
+class CreasePattern(val layers: List[Set[Fold]]) extends Foldable {
 
   private val logger = Logger[CreasePattern]
 
-  private val edges: Set[PaperEdge[Point]] = layers reduce (_ ++ _)
+  private val edges: List[Fold] = (layers reduce (_ ++ _)).toList
 
-  val creases: Seq[Layer] = layers map (_ filter (fold =>
-    fold.foldType == MountainFold || fold.foldType == ValleyFold))
+  override def creases: Set[Fold] =
+    layers map (_ filter (fold => {
+      fold.foldType == MountainFold || fold.foldType == ValleyFold
+    })) reduce (_ ++ _)
 
-  override def fold(edge: PaperEdge[Point]): CreasePattern = {
+  override def fold(edge: Fold): CreasePattern = {
     validateLegalEdge(edge)
 
-    @inline def isOnLeft(e: PaperEdge[Point]) =
-      (e map (_ compareTo (edge.start, edge.end))).sum > 0
+    @inline def isOnLeft(e: Fold) =
+      (e.toSet map (_ compareTo (edge.start, edge.end))).sum > 0
 
-    @inline def isOnRight(e: PaperEdge[Point]) =
-      (e map (_ compareTo (edge.start, edge.end))).sum < 0
+    @inline def isOnRight(e: Fold) =
+      (e.toSet map (_ compareTo (edge.start, edge.end))).sum < 0
 
-    @inline def isOnCentre(e: PaperEdge[Point]) =
-      (e map (_ compareTo (edge.start, edge.end))).sum == 0
+    @inline def isOnCentre(e: Fold) =
+      (e.toSet map (_ compareTo (edge.start, edge.end))).sum == 0
 
     val foldedCreasePattern =
-      (layers foldRight List[Layer]())((layer, acc) => {
+      (layers foldRight List[Set[Fold]]())((layer, acc) => {
         val creasedEdges = layer withFilter isOnCentre map (_.crease)
 
         val static = (layer filter isOnRight) ++ creasedEdges
@@ -53,15 +54,15 @@ class CreasePattern(private val layers: Seq[Layer]) extends Foldable {
 
   def size: Int = layers.length
 
-  private def validateLegalEdge(edge: PaperEdge[Point]) = {
+  private def validateLegalEdge(edge: Fold) = {
     edges find (_ == edge) match {
-      case Some(PaperEdge(_, _, PaperBoundary)) => throw IllegalCreaseException(edge)
-      case Some(PaperEdge(_, _, CreasedFold))   => throw EdgeAlreadyCreasedException(edge)
-      case _                                    => true
+      case Some(Fold(_, _, PaperBoundary)) => throw IllegalCreaseException(edge)
+      case Some(Fold(_, _, CreasedFold))   => throw EdgeAlreadyCreasedException(edge)
+      case _                               => true
     }
   }
 
-  private def rotateEdge(edge: PaperEdge[Point], axis: PaperEdge[Point]) = PaperEdge(
+  private def rotateEdge(edge: Fold, axis: Fold) = Fold(
     edge.start reflectedOver (axis.start, axis.end),
     edge.end reflectedOver (axis.start, axis.end),
     edge.foldType match {
@@ -77,11 +78,11 @@ class CreasePattern(private val layers: Seq[Layer]) extends Foldable {
 }
 
 object CreasePattern {
-  def from(creaseLines: PaperEdge[Point]*): CreasePattern = {
-    new CreasePattern(List(Layer(creaseLines: _*)))
+  def from(creaseLines: Fold*): CreasePattern = {
+    new CreasePattern(List(Set[Fold](creaseLines: _*)))
   }
 
-  def apply(layers: Layer*): CreasePattern = {
-    new CreasePattern(layers)
+  def apply(layers: Set[Fold]*): CreasePattern = {
+    new CreasePattern(layers.toList)
   }
 }
