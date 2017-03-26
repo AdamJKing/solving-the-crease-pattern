@@ -56,8 +56,8 @@ class CreasePattern(val layers: List[Set[Fold]]) extends Foldable {
 
   private def validateLegalEdge(edge: Fold) = {
     edges find (_ == edge) match {
-      case Some(Fold(_, _, PaperBoundary)) => throw IllegalCreaseException(edge)
-      case Some(Fold(_, _, CreasedFold))   => throw EdgeAlreadyCreasedException(edge)
+      case Some(Fold(_, _, PaperBoundary)) => throw new IllegalCreaseException(edge)
+      case Some(Fold(_, _, CreasedFold))   => throw new EdgeAlreadyCreasedException(edge)
       case _                               => true
     }
   }

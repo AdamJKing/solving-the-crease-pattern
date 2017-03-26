@@ -8,6 +8,7 @@ import uk.ac.aber.adk15.controllers.{
   ConfigurationController,
   ConfigurationControllerImpl
 }
+import uk.ac.aber.adk15.executors.ant.{AntBasedFoldExecutor, AntBasedFoldExecutorImpl}
 import uk.ac.aber.adk15.model.{ConfigurationService, ConfigurationServiceImpl}
 import uk.ac.aber.adk15.services.{FoldSelectionService, FoldSelectionServiceImpl}
 
@@ -17,5 +18,6 @@ class ApplicationModule extends AbstractModule with ScalaModule {
     bind[ApplicationController].to[ApplicationControllerImpl]
     bind[ConfigurationController].to[ConfigurationControllerImpl]
     bind[FoldSelectionService].to[FoldSelectionServiceImpl]
+    bind[AntBasedFoldExecutor].to[AntBasedFoldExecutorImpl]
   }
 }

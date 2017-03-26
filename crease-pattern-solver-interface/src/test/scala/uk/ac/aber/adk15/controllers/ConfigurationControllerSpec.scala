@@ -3,11 +3,11 @@ package uk.ac.aber.adk15.controllers
 import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.scalatest.BeforeAndAfterAll
-import uk.ac.aber.adk15.CommonSpec
+import uk.ac.aber.adk15.CommonFlatSpec
 import uk.ac.aber.adk15.model.ConfigConstants.DefaultConfig
 import uk.ac.aber.adk15.model.{Config, ConfigurationService}
 
-class ConfigurationControllerSpec extends CommonSpec with BeforeAndAfterAll {
+class ConfigurationControllerSpec extends CommonFlatSpec with BeforeAndAfterAll {
 
   @Mock private var configurationService: ConfigurationService = _
 

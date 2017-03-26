@@ -1,9 +1,9 @@
 package uk.ac.aber.adk15.model
 
-import uk.ac.aber.adk15.CommonSpec
+import uk.ac.aber.adk15.CommonFlatSpec
 import uk.ac.aber.adk15.model.ConfigConstants._
 
-class ConfigurationSpec extends CommonSpec {
+class ConfigurationSpec extends CommonFlatSpec {
 
   "The max threads config" should "be set to min if max threads set below min" in {
     // given

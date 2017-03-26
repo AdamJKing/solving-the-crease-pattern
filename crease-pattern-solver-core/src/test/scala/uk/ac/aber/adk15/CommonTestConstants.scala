@@ -1,6 +1,7 @@
-package uk.ac.aber.adk15.paper
+package uk.ac.aber.adk15
 
 import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
+import uk.ac.aber.adk15.paper.{CreasePattern, Foldable, Point}
 
 object CommonTestConstants {
   val FlatCreasePattern: Foldable = CreasePattern from (

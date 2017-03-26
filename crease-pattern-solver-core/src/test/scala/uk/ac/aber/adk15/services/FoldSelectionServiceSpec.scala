@@ -1,19 +1,14 @@
 package uk.ac.aber.adk15.services
 
-import uk.ac.aber.adk15.CommonSpec
-import uk.ac.aber.adk15.paper.CommonTestConstants._
+import uk.ac.aber.adk15.CommonFlatSpec
+import uk.ac.aber.adk15.CommonTestConstants._
 import uk.ac.aber.adk15.paper.CreasePatternPredef.Helpers._
 import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
 import uk.ac.aber.adk15.paper.Point
 
-class FoldSelectionServiceSpec extends CommonSpec {
+class FoldSelectionServiceSpec extends CommonFlatSpec {
 
   var foldSelectionService: FoldSelectionService = _
-
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    foldSelectionService = new FoldSelectionServiceImpl
-  }
 
   "Fold selection service" should "accurately find all available operations of flat crease pattern" in {
     // when

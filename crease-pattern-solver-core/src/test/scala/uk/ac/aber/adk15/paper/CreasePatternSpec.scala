@@ -1,7 +1,7 @@
 package uk.ac.aber.adk15.paper
 
 import org.scalatest.{FlatSpec, Matchers}
-import uk.ac.aber.adk15.paper.CommonTestConstants._
+import uk.ac.aber.adk15.CommonTestConstants._
 import uk.ac.aber.adk15.paper.CreasePatternPredef.Helpers._
 import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
 

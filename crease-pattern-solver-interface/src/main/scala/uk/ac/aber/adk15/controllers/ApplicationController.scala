@@ -1,6 +1,6 @@
 package uk.ac.aber.adk15.controllers
 
-import java.util.concurrent.Executors
+import java.util.concurrent.ForkJoinPool
 
 import com.google.inject.Inject
 import com.typesafe.scalalogging.Logger
@@ -8,18 +8,16 @@ import uk.ac.aber.adk15.controllers.ui.ApplicationViewController
 import uk.ac.aber.adk15.executors.ant.AntBasedFoldExecutor
 import uk.ac.aber.adk15.model.ConfigurationService
 import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
-import uk.ac.aber.adk15.paper.{CreasePattern, Foldable, Point}
-import uk.ac.aber.adk15.services.FoldSelectionService
+import uk.ac.aber.adk15.paper.{CreasePattern, Fold, Foldable, Point}
 
-import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Success}
+import scala.concurrent.{ExecutionContext, Future}
 
 trait ApplicationController {
-  def start(): Unit
+  def execute(): Future[Option[List[Fold]]]
 }
 
 class ApplicationControllerImpl @Inject()(private val configurationService: ConfigurationService,
-                                          private val foldSelectionService: FoldSelectionService)
+                                          private val antBasedFoldExecutor: AntBasedFoldExecutor)
     extends ApplicationController {
 
   private val logger = Logger[ApplicationViewController]
@@ -32,17 +30,12 @@ class ApplicationControllerImpl @Inject()(private val configurationService: Conf
     Point(0, 100) /\ Point(100, 0)
   )
 
-  def start(): Unit = {
-    val config       = configurationService.configuration
-    val foldExecutor = new AntBasedFoldExecutor(foldSelectionService, config)
+  def execute(): Future[Option[List[Fold]]] = {
+    val config = configurationService.configuration
 
     implicit val executionContext =
-      ExecutionContext.fromExecutor(Executors.newFixedThreadPool(config.maxThreads))
+      ExecutionContext.fromExecutor(new ForkJoinPool(config.maxThreads))
 
-    foldExecutor findFoldOrder FlatCreasePattern onComplete {
-      case Success(Some(result)) => logger info s"Process complete with foldOrder=$result"
-      case Success(None)         =>
-      case Failure(ex)           => throw ex
-    }
+    antBasedFoldExecutor findFoldOrder FlatCreasePattern
   }
 }

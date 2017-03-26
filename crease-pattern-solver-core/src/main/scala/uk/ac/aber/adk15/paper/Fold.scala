@@ -52,7 +52,7 @@ case class Fold(start: Point, end: Point, foldType: FoldType) {
   def crease: Fold = foldType match {
     case PaperBoundary             => this
     case MountainFold | ValleyFold => Fold(start, end, CreasedFold)
-    case CreasedFold               => throw IllegalCreaseException(this)
+    case CreasedFold               => throw new IllegalCreaseException(this)
   }
 }
 
