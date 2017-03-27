@@ -1,31 +1,29 @@
 package uk.ac.aber.adk15.controllers
 
+import org.mockito.BDDMockito._
 import org.mockito.Mock
-import org.mockito.Mockito.verify
 import org.scalatest.BeforeAndAfterAll
 import uk.ac.aber.adk15.CommonFlatSpec
-import uk.ac.aber.adk15.model.ConfigConstants.DefaultConfig
-import uk.ac.aber.adk15.model.{Config, ConfigurationService}
+import uk.ac.aber.adk15.model.Config
 
 class ConfigurationControllerSpec extends CommonFlatSpec with BeforeAndAfterAll {
 
-  @Mock private var configurationService: ConfigurationService = _
+  @Mock private var newConfig: Config = _
 
   private var configurationController: ConfigurationController = _
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    configurationController = new ConfigurationControllerImpl(configurationService)
+    configurationController = new ConfigurationControllerImpl(mock[Config])
   }
 
-  "Configuring the application" should "update the configuration using the config service" in {
+  it should "override the current config values with the new config values" in {
+    // given
+    given(newConfig.maxThreads) willReturn 8
+
     // when
-    configurationController configureApplication DefaultConfig
+    configurationController.configureApplication(newConfig)
 
-    // then
-    val configCapture = captor[Config]
-    verify(configurationService) configuration_= (configCapture capture)
-    configCapture.getValue should be(DefaultConfig)
+    //
   }
-
 }

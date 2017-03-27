@@ -1,33 +1,35 @@
 package uk.ac.aber.adk15.controllers
 
+import java.io.File
+
 import org.mockito.BDDMockito._
 import org.mockito.Matchers._
 import org.mockito.Mock
 import org.mockito.Mockito._
 import uk.ac.aber.adk15.CommonFlatSpec
 import uk.ac.aber.adk15.executors.ant.AntBasedFoldExecutor
-import uk.ac.aber.adk15.model.ConfigConstants.DefaultConfig
-import uk.ac.aber.adk15.model.ConfigurationService
+import uk.ac.aber.adk15.model.Config
 import uk.ac.aber.adk15.paper.{CreasePattern, Fold}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class ApplicationControllerSpec extends CommonFlatSpec {
 
-  @Mock private var configurationService: ConfigurationService = _
   @Mock private var antBasedFoldExecutor: AntBasedFoldExecutor = _
+  @Mock private var creasePatternParser: CreasePatternParser   = _
+  @Mock private var config: Config                             = _
 
   private var applicationController: ApplicationController = _
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     applicationController =
-      new ApplicationControllerImpl(configurationService, antBasedFoldExecutor)
+      new ApplicationControllerImpl(config, antBasedFoldExecutor, creasePatternParser)
 
-    given(configurationService.configuration) willReturn DefaultConfig
+    given(config.maxThreads) willReturn 8
   }
 
-  it should "use the configuration from the config service" in {
+  it should "should use the values from the configuration" in {
     // given
     given(
       antBasedFoldExecutor
@@ -35,10 +37,10 @@ class ApplicationControllerSpec extends CommonFlatSpec {
       .willReturn(mock[Future[Option[List[Fold]]]])
 
     // when
-    applicationController.execute()
+    applicationController.execute(mock[File])
 
     // then
-    verify(configurationService).configuration
+    verify(config).maxThreads
   }
 
   it should "successfully find a fold order if there are no issues" in {
@@ -49,7 +51,7 @@ class ApplicationControllerSpec extends CommonFlatSpec {
       .willReturn(mock[Future[Option[List[Fold]]]])
 
     // when
-    applicationController.execute()
+    applicationController.execute(mock[File])
 
     // then
     verify(antBasedFoldExecutor).findFoldOrder(any[CreasePattern])(
@@ -62,6 +64,17 @@ class ApplicationControllerSpec extends CommonFlatSpec {
     given((antBasedFoldExecutor findFoldOrder any[CreasePattern])(any[ExecutionContext])) willReturn deadFuture
 
     // then
-    applicationController.execute() shouldBe deadFuture
+    applicationController.execute(mock[File]) shouldBe deadFuture
+  }
+
+  it should "use the crease pattern parsed from the crease pattern file" in {
+    // given
+    val creasePatternFile = mock[File]
+
+    // when
+    applicationController.execute(creasePatternFile)
+
+    // then
+    verify(creasePatternParser) parseFile creasePatternFile
   }
 }
