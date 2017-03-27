@@ -1,73 +1,67 @@
 package uk.ac.aber.adk15.controllers
 
-import org.mockito.BDDMockito.given
-import org.mockito.Matchers.any
+import org.mockito.BDDMockito._
+import org.mockito.Matchers._
 import org.mockito.Mock
-import org.mockito.Mockito.verify
-import uk.ac.aber.adk15.CommonSpec
-import uk.ac.aber.adk15.executors.{FoldExecutor, FoldExecutorFactory}
+import org.mockito.Mockito._
+import uk.ac.aber.adk15.CommonFlatSpec
+import uk.ac.aber.adk15.executors.ant.AntBasedFoldExecutor
 import uk.ac.aber.adk15.model.ConfigConstants.DefaultConfig
-import uk.ac.aber.adk15.model.{Config, ConfigurationService}
-import uk.ac.aber.adk15.paper.CreasePattern
+import uk.ac.aber.adk15.model.ConfigurationService
+import uk.ac.aber.adk15.paper.{CreasePattern, Fold}
 
-class ApplicationControllerSpec extends CommonSpec {
+import scala.concurrent.{ExecutionContext, Future}
+
+class ApplicationControllerSpec extends CommonFlatSpec {
 
   @Mock private var configurationService: ConfigurationService = _
-  @Mock private var foldExecutorFactory: FoldExecutorFactory   = _
-  @Mock private var foldExecutor: FoldExecutor                 = _
+  @Mock private var antBasedFoldExecutor: AntBasedFoldExecutor = _
 
   private var applicationController: ApplicationController = _
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-
-    given(foldExecutor findFoldOrder any[CreasePattern]) willReturn List.empty
-    given(foldExecutorFactory createFactoryFrom any[Config]) willReturn foldExecutor
-
     applicationController =
-      new ApplicationControllerImpl(configurationService, foldExecutorFactory)
+      new ApplicationControllerImpl(configurationService, antBasedFoldExecutor)
+
+    given(configurationService.configuration) willReturn DefaultConfig
   }
 
-  "When started the application" should "use the configuration from the config service" in {
+  it should "use the configuration from the config service" in {
     // given
-    given(configurationService.configuration) willReturn DefaultConfig
+    given(
+      antBasedFoldExecutor
+        .findFoldOrder(any[CreasePattern])(implicitly(any[ExecutionContext])))
+      .willReturn(mock[Future[Option[List[Fold]]]])
 
     // when
-    applicationController.start()
+    applicationController.execute()
 
     // then
     verify(configurationService).configuration
   }
 
-  "When started the application" should "generate the appropriate executor from the factory" in {
+  it should "successfully find a fold order if there are no issues" in {
     // given
-    given(configurationService.configuration) willReturn DefaultConfig
+    given(
+      antBasedFoldExecutor
+        .findFoldOrder(any[CreasePattern])(implicitly(any[ExecutionContext])))
+      .willReturn(mock[Future[Option[List[Fold]]]])
 
     // when
-    applicationController.start()
+    applicationController.execute()
 
     // then
-    val configCaptor = captor[Config]
-    verify(foldExecutorFactory) createFactoryFrom (configCaptor capture)
-    configCaptor.getValue shouldBe DefaultConfig
+    verify(antBasedFoldExecutor).findFoldOrder(any[CreasePattern])(
+      implicitly(any[ExecutionContext]))
   }
 
-  "The application" should "successfully find a fold order if there are no issues" in {
+  it should "throw an exception if one occurs during the execution" in {
     // given
-    given(foldExecutor findFoldOrder any[CreasePattern]) willReturn List.empty
-
-    // when
-    applicationController.start()
+    val deadFuture = Future.failed(new IllegalArgumentException)
+    given((antBasedFoldExecutor findFoldOrder any[CreasePattern])(any[ExecutionContext])) willReturn deadFuture
 
     // then
-    // nothing to verify yet
-  }
-
-  "The application" should "throw an exception if one occurs during the execution" in {
-    // given
-    given(foldExecutor findFoldOrder any[CreasePattern]) willThrow new IllegalArgumentException
-
-    // then
-    intercept[Exception](applicationController.start()) shouldBe a[IllegalArgumentException]
+    applicationController.execute() shouldBe deadFuture
   }
 }

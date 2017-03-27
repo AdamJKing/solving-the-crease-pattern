@@ -9,7 +9,7 @@ class ConfigurationServiceImpl extends ConfigurationService {
 
   private var config = Config()
 
-  override def configuration: Config                 = Config(config.foldFinderType, config.maxThreads)
+  override def configuration: Config                 = Config(config.maxThreads)
   override def configuration_=(config: Config): Unit = { this.config = config }
 
 }

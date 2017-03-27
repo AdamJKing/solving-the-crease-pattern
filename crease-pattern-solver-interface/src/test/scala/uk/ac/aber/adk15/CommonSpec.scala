@@ -1,19 +1,17 @@
 package uk.ac.aber.adk15
 
 import org.mockito.{ArgumentCaptor, MockitoAnnotations}
+import org.scalatest._
 import org.scalatest.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec, Matchers}
 
 import scala.reflect.{ClassTag, _}
 
-trait CommonSpec
-    extends FlatSpec
-    with Matchers
-    with MockitoSugar
-    with BeforeAndAfterEach
-    with BeforeAndAfterAll {
+sealed trait CommonSpec extends BeforeAndAfterEach with MockitoSugar with Matchers { this: Suite =>
 
-  override def beforeEach(): Unit = MockitoAnnotations.initMocks(this)
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    MockitoAnnotations.initMocks(this)
+  }
 
   /**
     * Helper function to pretty up the argument captor call.
@@ -24,3 +22,6 @@ trait CommonSpec
   def captor[T <: AnyRef: ClassTag]: ArgumentCaptor[T] =
     ArgumentCaptor forClass classTag[T].runtimeClass.asInstanceOf[Class[T]]
 }
+
+trait CommonAsyncSpec extends AsyncFlatSpec with CommonSpec
+trait CommonFlatSpec  extends FlatSpec with CommonSpec

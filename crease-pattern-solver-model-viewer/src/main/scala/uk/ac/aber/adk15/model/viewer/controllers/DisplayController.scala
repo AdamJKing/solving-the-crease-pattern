@@ -1,14 +1,4 @@
-package uk.ac.aber.adk15.model.viewer.controllers
-
-import com.typesafe.scalalogging.Logger
-import uk.ac.aber.adk15.Point
-import uk.ac.aber.adk15.paper.CreasePatternPredef.Layer
-import uk.ac.aber.adk15.paper._
-
-import scalafx.scene.canvas.Canvas
-import scalafx.scene.layout.Pane
-import scalafx.scene.paint.Color._
-import scalafxml.core.macros.sfxml
+package uk.ac.aber.adk15.model.viewer.controllers[Fold]
 
 @sfxml
 class DisplayController(private val modelView: Pane) {
@@ -28,7 +18,7 @@ class DisplayController(private val modelView: Pane) {
   graphicsContext.lineWidth = 2.5d
 
   private val myGraph = CreasePattern(
-    Layer(
+    Set[Fold](
       PaperEdge(Point(0, 0), Point(100, 0), PaperBoundary),
       PaperEdge(Point(0, 100), Point(0, 0), PaperBoundary),
       PaperEdge(Point(0, 100), Point(100, 0), MountainFold),
@@ -46,7 +36,7 @@ class DisplayController(private val modelView: Pane) {
 
   logger debug s"xCeiling is $xCeiling, yCeiling is $yCeiling"
 
-  myGraph.edges.foreach((p: PaperEdge[Point]) => {
+  myGraph.edges.foreach((p: PaperEdge) => {
     def normalise(x: Double, y: Double) =
       ((x * (canvas.getWidth - 10d) / xCeiling) + 5d,
        (y * (canvas.getHeight - 10d) / yCeiling) + 5d)

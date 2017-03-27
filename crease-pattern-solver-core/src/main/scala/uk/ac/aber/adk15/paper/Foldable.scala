@@ -1,8 +1,9 @@
 package uk.ac.aber.adk15.paper
 
-import uk.ac.aber.adk15.paper.CreasePatternPredef.Layer
-
 trait Foldable {
-  def fold(edge: PaperEdge[Point]): Foldable
-  val creases: Seq[Layer]
+  def fold(edge: Fold): Foldable
+  def creases: Set[Fold]
+  def size: Int
+
+  val layers: List[Set[Fold]]
 }
