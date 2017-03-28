@@ -28,17 +28,21 @@ class CreasePattern(val layers: List[Set[Fold]]) extends Foldable {
 
     val foldedCreasePattern =
       (layers foldRight List[Set[Fold]]())((layer, acc) => {
-        val creasedEdges = layer withFilter isOnCentre map (_.crease)
+        if (layer contains edge) {
+          val creasedEdges = layer withFilter isOnCentre map (_.crease)
 
-        val static = (layer filter isOnRight) ++ creasedEdges
-        val folded = (layer withFilter isOnLeft map { rotateEdge(_, axis = edge) }) ++ creasedEdges
+          val static = (layer filter isOnRight) ++ creasedEdges
+          val folded = (layer withFilter isOnLeft map {
+            rotateEdge(_, axis = edge)
+          }) ++ creasedEdges
 
-        (folded.headOption, static.headOption) match {
-          case (Some(_), Some(_)) => folded +: acc :+ static
-          case (Some(_), None)    => folded +: acc
-          case (None, Some(_))    => acc :+ static
-          case (None, None)       => acc
-        }
+          (folded.headOption, static.headOption) match {
+            case (Some(_), Some(_)) => folded +: acc :+ static
+            case (Some(_), None) => folded +: acc
+            case (None, Some(_)) => acc :+ static
+            case (None, None) => acc
+          }
+        } else acc :+ layer
       })
 
     logger debug s"$foldedCreasePattern"
