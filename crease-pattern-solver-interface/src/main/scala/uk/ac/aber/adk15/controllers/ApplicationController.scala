@@ -11,20 +11,18 @@ import uk.ac.aber.adk15.paper.Fold
 import scala.concurrent.{ExecutionContext, Future}
 
 trait ApplicationController {
-  def execute(creasePatternFile: File): Future[Option[List[Fold]]]
+  def execute(creasePatternFile: File, config: Config): Future[Option[List[Fold]]]
 }
 
-class ApplicationControllerImpl @Inject()(private val config: Config,
-                                          private val antBasedFoldExecutor: AntBasedFoldExecutor,
+class ApplicationControllerImpl @Inject()(private val antBasedFoldExecutor: AntBasedFoldExecutor,
                                           private val creasePatternParser: CreasePatternParser)
     extends ApplicationController {
 
-  def execute(creasePatternFile: File): Future[Option[List[Fold]]] = {
+  override def execute(creasePatternFile: File, config: Config): Future[Option[List[Fold]]] = {
     implicit val executionContext =
       ExecutionContext.fromExecutor(new ForkJoinPool(config.maxThreads))
 
-    antBasedFoldExecutor findFoldOrder {
-      creasePatternParser parseFile creasePatternFile
-    }
+    val creasePattern = creasePatternParser parseFile creasePatternFile
+    antBasedFoldExecutor findFoldOrder (creasePattern, maxAnts = config.maxThreads)
   }
 }
