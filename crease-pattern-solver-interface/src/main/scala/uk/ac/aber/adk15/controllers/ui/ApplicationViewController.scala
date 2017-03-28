@@ -5,6 +5,8 @@ import javafx.application.Platform
 
 import com.typesafe.scalalogging.Logger
 import uk.ac.aber.adk15.controllers.ApplicationController
+import uk.ac.aber.adk15.model.Config
+import uk.ac.aber.adk15.model.Config.Constants.DefaultConfig
 import uk.ac.aber.adk15.view.{ApplicationView, ConfigurationView}
 
 import scala.concurrent.ExecutionContext
@@ -20,13 +22,14 @@ class ApplicationViewController(private val mainController: ApplicationControlle
   private val logger = Logger[ApplicationViewController]
 
   private var creasePatternFile: Option[File] = None
+  private var configuration: Config           = DefaultConfig
 
   def start(): Unit = {
     implicit val executionContext =
       ExecutionContext.fromExecutor((command: Runnable) => Platform.runLater(command))
 
     if (creasePatternFile.isDefined) {
-      mainController.execute(creasePatternFile.get) onComplete {
+      mainController.execute(creasePatternFile.get, configuration) onComplete {
         case Success(Some(result)) => // show result view
         case Success(None)         => showNoFoldOrderFoundMessage()
         case Failure(ex)           => showExceptionMessage(ex)
@@ -38,7 +41,7 @@ class ApplicationViewController(private val mainController: ApplicationControlle
   }
 
   def configure(): Unit = {
-    ConfigurationView.show()
+    configuration = ConfigurationView.showConfigDialog() getOrElse configuration
   }
 
   def loadCreasePattern(): Unit = {

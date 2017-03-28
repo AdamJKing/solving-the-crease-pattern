@@ -3,7 +3,7 @@ package uk.ac.aber.adk15
 import java.io.IOException
 
 import com.google.inject.{Guice, Injector}
-import uk.ac.aber.adk15.view.{ApplicationView, ConfigurationView}
+import uk.ac.aber.adk15.view.ApplicationView
 
 import scala.util.{Failure, Success, Try}
 import scalafx.Includes._
@@ -18,8 +18,6 @@ object Application extends JFXApp {
   implicit val dependencyResolver = new GuiceDependencyResolver()
 
   ApplicationView.scene = loadFromFxml("application_skeleton.fxml")
-
-  ConfigurationView.scene = loadFromFxml("configuration_panel.fxml")
 
   private def loadFromFxml(filename: String)(
       implicit dependencyResolver: ControllerDependencyResolver) = {

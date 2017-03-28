@@ -10,6 +10,11 @@ class FoldSelectionServiceSpec extends CommonFlatSpec {
 
   var foldSelectionService: FoldSelectionService = _
 
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    foldSelectionService = new FoldSelectionServiceImpl
+  }
+
   "Fold selection service" should "accurately find all available operations of flat crease pattern" in {
     // when
     val availableOperations = foldSelectionService getAvailableOperations FlatCreasePattern

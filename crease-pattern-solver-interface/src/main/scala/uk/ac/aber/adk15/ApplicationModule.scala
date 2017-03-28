@@ -11,7 +11,6 @@ class ApplicationModule extends AbstractModule with ScalaModule {
     bind[AntBasedFoldExecutor].to[AntBasedFoldExecutorImpl]
     bind[AntTraverser].to[AntTraverserImpl]
     bind[ApplicationController].to[ApplicationControllerImpl]
-    bind[ConfigurationController].to[ConfigurationControllerImpl]
     bind[CreasePatternParser].to[CreasePatternParserImpl]
     bind[DiceRollService].to[DiceRollServiceImpl]
     bind[FoldSelectionService].to[FoldSelectionServiceImpl]
