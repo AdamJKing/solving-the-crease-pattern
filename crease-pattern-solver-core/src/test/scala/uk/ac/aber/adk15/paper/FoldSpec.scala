@@ -20,8 +20,8 @@ class FoldSpec extends FlatSpec with Matchers {
     val edgeTwo   = Point(0, 0) /\ Point(0, 1)
     val edgeThree = Point(0, 1) /\ Point(0, 0)
 
-    edgeOne should equal(edgeTwo)
-    edgeOne should equal(edgeThree)
+    edgeOne.hashCode() should equal(edgeTwo.hashCode())
+    edgeOne.hashCode() should equal(edgeThree.hashCode())
   }
 
   "Two unfolded edges with different values" should "not be equal" in {
@@ -36,8 +36,8 @@ class FoldSpec extends FlatSpec with Matchers {
     val edgeTwo   = Point(0, 0) ~~ Point(0, 1)
     val edgeThree = Point(0, 1) ~~ Point(0, 0)
 
-    edgeOne should equal(edgeTwo)
-    edgeOne should equal(edgeThree)
+    edgeOne.hashCode() should equal(edgeTwo.hashCode())
+    edgeOne.hashCode() should equal(edgeThree.hashCode())
   }
 
   "Two folded edges with different values" should "not be equal" in {
@@ -48,9 +48,15 @@ class FoldSpec extends FlatSpec with Matchers {
   }
 
   "Two edges with the same type but different lengths" should "be the same" in {
-    val edgeOne = Point(0, 0) /\ Point(100, 100)
-    val edgeTwo = Point(25, 25) /\ Point(75, 75)
+    val edgeOne   = Point(0, 0) /\ Point(100, 100)
+    val edgeTwo   = Point(25, 25) /\ Point(75, 75)
+    val edgeThree = Point(50, 50) /\ Point(100, 100)
+    val edgeFour  = Point(50, 50) /\ Point(0, 100)
 
-    edgeOne should equal(edgeTwo)
+    edgeOne.hashCode() should equal(edgeTwo.hashCode())
+    edgeOne.hashCode() should equal(edgeThree.hashCode())
+    all(List(edgeOne, edgeTwo, edgeThree)) should not equal edgeFour
+    Fold(Point(0, 100), Point(100, 0), MountainFold) should equal(
+      Fold(Point(0, 100), Point(50, 50), MountainFold))
   }
 }

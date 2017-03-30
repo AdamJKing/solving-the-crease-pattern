@@ -18,44 +18,128 @@ class CreasePatternSpec extends FlatSpec with Matchers {
     // then
     foldedCreasePattern should be(
       CreasePattern(
-        Set[Fold](
-          Point(100, 0) -- Point(100, 100),
-          Point(100, 100) -- Point(0, 100),
-          Point(0, 100) ~~ Point(100, 0)
+        Set(
+          Point(0, 100) ~~ Point(100, 0),
+          Point(0, 0) -- Point(0, 100),
+          Point(100, 0) -- Point(0, 0)
         ),
-        Set[Fold](
-          Point(100, 0) -- Point(100, 100),
-          Point(100, 100) -- Point(0, 100),
-          Point(0, 100) ~~ Point(100, 0)
+        Set(
+          Point(0, 100) ~~ Point(100, 0),
+          Point(0, 0) -- Point(0, 100),
+          Point(100, 0) -- Point(0, 0)
         )
-      ))
+      )
+    )
   }
 
   "Crease patterns with the same edges" should "equal each other" in {
     // given
-    val a = CreasePattern from Point(100, 0) -- Point(0, 100)
+    val first = CreasePattern(
+      Set(
+        Point(0, 100) ~~ Point(100, 0),
+        Point(0, 0) -- Point(0, 100),
+        Point(100, 0) -- Point(0, 0)
+      ),
+      Set(
+        Point(0, 100) ~~ Point(100, 0),
+        Point(0, 0) -- Point(0, 100),
+        Point(100, 0) -- Point(0, 0)
+      )
+    )
 
-    val b = CreasePattern from Point(100, 0) -- Point(0, 100)
-
-    val c = CreasePattern from Point(0, 100) -- Point(100, 0)
+    val second = CreasePattern(
+      Set(
+        Point(0.0, 100.0) ~~ Point(100.0, 0.0),
+        Point(0.0, 0.0) -- Point(0.0, 100.0),
+        Point(100.0, 0.0) -- Point(0.0, 0.0)
+      ),
+      Set(
+        Point(0.0, 100.0) ~~ Point(100.0, 0.0),
+        Point(0.0, 100.0) -- Point(0.0, 0.0),
+        Point(0.0, 0.0) -- Point(100.0, 0.0)
+      )
+    )
 
     // then
-    a should equal(b)
-    b should equal(c)
+    first should equal(second)
+    first.hashCode() should equal(second.hashCode())
   }
 
   "A crease pattern with multiple layered folds" should "be fold-able" in {
     // when
     val creases = List(Point(50, 50) \/ Point(100, 100),
-                       Point(0, 50) /\ Point(25, 25),
-                       Point(0, 100) \/ Point(50, 50))
+                       Point(100, 0) /\ Point(50, 50),
+                       Point(100, 50) /\ Point(75, 75))
 
     val foldedCreasePattern =
-      (creases foldRight MultiLayeredUnfoldedPaper)((fold, model) =>
-        model <~~ fold)
+      (creases foldLeft MultiLayeredUnfoldedPaper)(_ <~~ _)
 
     // then
-    foldedCreasePattern.size should be(6)
+    withClue(foldedCreasePattern)(foldedCreasePattern.size should be(6))
     foldedCreasePattern should be(MultiLayeredFoldedPaper)
+  }
+
+  "A crease pattern with multiple layered folds" should "be fold-able regardless of direction" in {
+    // given
+    val RotatedMultiLayeredUnfoldedPaper: Foldable =
+      CreasePattern from (
+        Point(0, 0) -- Point(50, 0),
+        Point(50, 0) -- Point(100, 0),
+        Point(0, 0) -- Point(0, 50),
+        Point(0, 50) -- Point(0, 100),
+        Point(0, 100) -- Point(100, 100),
+        Point(100, 0) -- Point(100, 100),
+        Point(0, 0) /\ Point(50, 50),
+        Point(50, 50) \/ Point(100, 100),
+        Point(0, 50) \/ Point(25, 75),
+        Point(25, 75) \/ Point(50, 50),
+        Point(0, 100) \/ Point(25, 75),
+        Point(50, 50) \/ Point(100, 0),
+        Point(25, 75) /\ Point(50, 100)
+    )
+
+    // when
+    val creases = List(Point(0, 100) \/ Point(100, 0),
+                       Point(50, 50) \/ Point(0, 0),
+                       Point(50, 100) /\ Point(25, 75))
+
+    val foldedCreasePattern =
+      (creases foldLeft RotatedMultiLayeredUnfoldedPaper)(_ <~~ _)
+
+    // then
+    withClue(foldedCreasePattern)(foldedCreasePattern.size should be(6))
+    foldedCreasePattern should be(
+      CreasePattern(
+        Set(
+          Point(100.0, 0.0) ~~ Point(50.0, 50.0),
+          Point(50.0, 50.0) ~~ Point(100.0, 100.0),
+          Point(100.0, 0.0) -- Point(100.0, 100.0)
+        ),
+        Set(
+          Point(50.0, 50.0) ~~ Point(100.0, 0.0),
+          Point(50.0, 50.0) ~~ Point(100.0, 100.0),
+          Point(100.0, 0.0) -- Point(100.0, 100.0)
+        ),
+        Set(
+          Point(100.0, 100.0) -- Point(100.0, 50.0),
+          Point(75.0, 75.0) ~~ Point(100.0, 50.0),
+          Point(100.0, 100.0) ~~ Point(75.0, 75.0)
+        ),
+        Set(
+          Point(100.0, 100.0) -- Point(100.0, 50.0),
+          Point(100.0, 50.0) ~~ Point(75.0, 75.0),
+          Point(100.0, 100.0) ~~ Point(75.0, 75.0)
+        ),
+        Set(
+          Point(75.0, 75.0) ~~ Point(50.0, 50.0),
+          Point(100.0, 50.0) ~~ Point(75.0, 75.0),
+          Point(100.0, 0.0) ~~ Point(50.0, 50.0)
+        ),
+        Set(
+          Point(75.0, 75.0) ~~ Point(50.0, 50.0),
+          Point(75.0, 75.0) ~~ Point(100.0, 50.0),
+          Point(50.0, 50.0) ~~ Point(100.0, 0.0)
+        )
+      ))
   }
 }

@@ -5,4 +5,4 @@ abstract class PaperException(msg: String) extends Exception(msg)
 class EdgeAlreadyCreasedException(edge: Fold)
     extends PaperException(s"Edge $edge already creased.")
 
-class IllegalCreaseException(edge: Fold) extends PaperException(s"Error with edge: $edge")
+class IllegalFoldException(edge: Fold) extends PaperException(s"Error with edge: $edge")

@@ -60,6 +60,8 @@ object Point {
         case (dy, dx) => dy / dx
       }
 
+      @inline final def distanceTo(p2: Point): Double = abs(p.x - p2.x) + abs(p.y - p2.y)
+
       /**
         * Returns the reflection the given point over the line defined by { start, end }.
         * If given a point on the line, will return the same point.

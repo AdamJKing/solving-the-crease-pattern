@@ -8,7 +8,12 @@ import uk.ac.aber.adk15.paper.Point
 
 class FoldSelectionServiceSpec extends CommonFlatSpec {
 
-  var foldSelectionService: FoldSelectionService = _
+  private var foldSelectionService: FoldSelectionService = _
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    foldSelectionService = new FoldSelectionServiceImpl
+  }
 
   "Fold selection service" should "accurately find all available operations of flat crease pattern" in {
     // when
@@ -38,4 +43,5 @@ class FoldSelectionServiceSpec extends CommonFlatSpec {
     nextAvailableOperations shouldBe Set(Point(0, 50) /\ Point(25, 25),
                                          Point(0, 100) \/ Point(50, 50))
   }
+
 }
