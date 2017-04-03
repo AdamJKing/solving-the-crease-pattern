@@ -1,26 +1,30 @@
 package uk.ac.aber.adk15.services
 
-import uk.ac.aber.adk15.paper.{CreasedFold, Fold, Foldable}
+import uk.ac.aber.adk15.paper._
 
 trait FoldSelectionService {
-  def getAvailableOperations(creasePattern: Foldable): Set[Fold]
+  def getAvailableOperations(creasePattern: CreasePattern): Set[Fold]
 }
 class FoldSelectionServiceImpl extends FoldSelectionService {
-  override def getAvailableOperations(model: Foldable): Set[Fold] = {
-    def fitsCreasedEdgeRule(layers: List[Set[Fold]]): Boolean = {
-      (layers sliding 2) map { x =>
-        (x.head filter (_.foldType == CreasedFold)) exists
-          (x.last filter (_.foldType == CreasedFold)).contains
-      } forall (_ == true)
+  override def getAvailableOperations(model: CreasePattern): Set[Fold] = {
+    val possibleCreases =
+      (model.layers flatMap (layer => layer.valleyFolds() ++ layer.mountainFolds())).toSet
+
+    possibleCreases filter { crease =>
+      val layersToCheck = {
+        if (crease.foldType == ValleyFold)
+          model.layers takeWhile (_ contains crease)
+        else
+          model.layers.reverse takeWhile (_ contains crease)
+      }
+
+      layersToCheck.size == 1 || {
+        (layersToCheck sliding 2) forall { layer =>
+          val (top, bottom) = (layer.head, layer.last)
+
+          top.creasedFolds() exists (creased => bottom.creasedFolds() contains creased)
+        }
+      }
     }
-
-    model.creases filter (crease => {
-      val layers = model.layers filter (_ contains crease)
-
-      if (layers.size > 1)
-        fitsCreasedEdgeRule(layers)
-
-      layers.nonEmpty
-    })
   }
 }

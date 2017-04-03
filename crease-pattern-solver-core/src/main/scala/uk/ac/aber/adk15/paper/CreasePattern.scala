@@ -1,35 +1,57 @@
 package uk.ac.aber.adk15.paper
 
 import com.typesafe.scalalogging.Logger
-import uk.ac.aber.adk15.paper.Point.Helpers._
 
-import scala.math.{abs, max}
+import scala.Function.tupled
+import scala.annotation.tailrec
 
-class CreasePattern(val layers: List[Set[Fold]]) extends Foldable {
+class CreasePattern(val layers: Seq[PaperLayer]) {
+  import CreasePattern._
 
   private val logger = Logger[CreasePattern]
+//
+//  private val edges: Seq[Fold] = layers flatMap (layer =>
+//    layer.creasedFolds() ++ layer.valleyFolds() ++ layer.creasedFolds() ++ layer.paperBoundaries())
 
-  private val edges: List[Fold] = (layers reduce (_ ++ _)).toList
+  def folds: Set[Fold] =
+    layers.flatMap(layer => layer.mountainFolds() ++ layer.valleyFolds())(collection.breakOut)
 
-  override def creases: Set[Fold] =
-    layers map (_ filter (fold => {
-      fold.foldType == MountainFold || fold.foldType == ValleyFold
-    })) reduce (_ ++ _)
-
-  override def fold(edge: Fold): CreasePattern = {
-    validateLegalEdge(edge)
+  def fold(edge: Fold): CreasePattern = {
+    validateLegalFold(edge)
 
     val (layersToFold, layersToLeave) = layers partition (_ contains edge)
-    val (left, right)                 = sliceLayerStack(layersToFold, edge)
+    val (left, right)                 = (layersToFold map (_.segmentOnLine(edge.start, edge.end))).unzip
+
+    val maxAreaOfLeft  = (left map (_.surfaceArea())).max
+    val maxAreaOfRight = (right map (_.surfaceArea())).max
 
     val newLayers =
-      if (surfaceArea(left) < surfaceArea(right))
-        left.map(_ map (fold => rotateEdge(fold, edge))) ++ right
-      else
-        right.map(_ map (fold => rotateEdge(fold, edge))) ++ left
+      if (maxAreaOfLeft < maxAreaOfRight) {
+        logger debug s"Folding to the right over $edge"
 
-    new CreasePattern(repair(newLayers, layersToLeave, edge.foldType))
+        if (edge.foldType == ValleyFold)
+          (left map (_ rotateAround (edge.start, edge.end))) ++ right
+        else
+          right ++ (left map (_ rotateAround (edge.start, edge.end)))
+      } else {
+        logger debug s"Folding to the left over $edge"
+
+        if (edge.foldType == ValleyFold)
+          (right map (_ rotateAround (edge.start, edge.end))) ++ left
+        else
+          left ++ (right map (_ rotateAround (edge.start, edge.end)))
+      }
+
+    new CreasePattern(repair(layersToLeave, newLayers, edge.foldType))
   }
+
+  private def validateLegalFold(fold: Fold) =
+    if (!(folds contains fold)) {
+      logger error s"Could not fold $fold, folds available were $folds"
+      throw new IllegalFoldException(fold)
+    }
+
+  def size: Int = layers.length
 
   override def equals(obj: Any): Boolean = obj match {
     case other: CreasePattern => other.layers == this.layers
@@ -40,132 +62,53 @@ class CreasePattern(val layers: List[Set[Fold]]) extends Foldable {
     17 * 31 * layers.hashCode()
   }
 
-  override def toString = s"{ ${layers mkString ","} }"
-
-  def size: Int = layers.length
-
-  private def validateLegalEdge(edge: Fold) = {
-    edges find (_ == edge) match {
-      case Some(Fold(_, _, PaperBoundary)) => throw new IllegalFoldException(edge)
-      case Some(Fold(_, _, CreasedFold))   => throw new EdgeAlreadyCreasedException(edge)
-      case _                               => true
-    }
-  }
-
-  private def rotateEdge(edge: Fold, axis: Fold) = Fold(
-    edge.start reflectedOver (axis.start, axis.end),
-    edge.end reflectedOver (axis.start, axis.end),
-    edge.foldType match {
-      // when we fold a piece of paper, all unfolded creases receive the inverse assignment
-      case MountainFold => ValleyFold
-      case ValleyFold   => MountainFold
-
-      // those already creased, or a physical boundary, will not change when folded
-      case CreasedFold   => CreasedFold
-      case PaperBoundary => PaperBoundary
-    }
-  )
-
-  private def sliceLayerStack(stack: List[Set[Fold]], slice: Fold) = {
-    @inline def isOnLeft(e: Fold) =
-      (e.toSet map (_ compareTo (slice.start, slice.end))).sum > 0
-
-    @inline def isOnRight(e: Fold) =
-      (e.toSet map (_ compareTo (slice.start, slice.end))).sum < 0
-
-    @inline def isOnCentre(e: Fold) =
-      (e.toSet map (_ compareTo (slice.start, slice.end))).sum == 0
-
-    def creaseAndKeepIf(layer: Set[Fold], condition: Fold => Boolean) = {
-      layer filter (f => condition(f) || isOnCentre(f)) map (x =>
-        if (isOnCentre(x)) x.crease
-        else x)
-    }
-
-    (stack map (layer => creaseAndKeepIf(layer, isOnLeft)),
-     stack map (layer => creaseAndKeepIf(layer, isOnRight)))
-  }
-
-  private def surfaceArea(layers: List[Set[Fold]]): Double = {
-    def calculateArea(layer: Set[Fold]) = {
-      val points = (layer flatMap (_.toSet)).toSeq
-
-      (points grouped 3).map { group =>
-        if (group.size < 3) 0
-        else {
-          val (a: Point, b: Point, c: Point) = (group.head, group(1), group(2))
-          // http://www.mathopenref.com/coordtrianglearea.html
-          abs((a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2)
-        }
-      }.sum
-    }
-
-    (layers foldLeft 0.0)((maxArea, layer) => max(calculateArea(layer), maxArea))
-  }
-
-  private def repair(toRepair: List[Set[Fold]],
-                     repairWith: List[Set[Fold]],
-                     foldType: FoldType): List[Set[Fold]] = {
-
-    if (repairWith.isEmpty) return toRepair
-
-    def containsNoOverlaps(a: Set[Fold], b: Set[Fold]): Boolean = {
-      val (left, right) = (a flatMap (_.toSet), b flatMap (_.toSet))
-
-      left forall (testPoint =>
-        ((right sliding 2) foldLeft false)((flop, points) => {
-          if ((points.head.y > testPoint.y) != (points.last.y > testPoint.y) && (testPoint.x < (points.last.x - points.head.x * ((testPoint.y - points.head.y / points.last.y - points.head.y) + points.head.x))))
-            !flop
-          else
-            flop
-        }))
-    }
-
-    foldType match {
-      case MountainFold =>
-        val tails = toRepair.tails
-        val inits = repairWith.inits
-        val potentialOverlaps = (tails dropWhile (_ => tails.size > inits.size))
-          .zip(inits dropWhile (_ => inits.size > tails.size))
-
-        val potentialOverlap = potentialOverlaps find (overlap =>
-          (for (i <- overlap._1; j <- overlap._2) yield (i, j)) forall (layers =>
-            containsNoOverlaps(layers._1, layers._2)))
-
-        potentialOverlap.map(overlap => {
-          val notInOverlap = (repairWith filter potentialOverlap.contains,
-                              toRepair filter potentialOverlap.contains)
-
-          notInOverlap._1 ++ (for (i <- overlap._1; j <- overlap._2)
-            yield i ++ j) ++ notInOverlap._2
-        }) getOrElse repairWith ++ toRepair
-
-      case ValleyFold =>
-        val potentialOverlaps = toRepair.inits zip repairWith.tails
-
-        val potentialOverlap = potentialOverlaps find (overlap =>
-          (for (i <- overlap._1; j <- overlap._2) yield (i, j)) forall (layers =>
-            containsNoOverlaps(layers._1, layers._2)))
-
-        potentialOverlap.map(overlap => {
-          val notInOverlap = (toRepair filter potentialOverlap.contains,
-                              repairWith filter potentialOverlap.contains)
-
-          notInOverlap._1 ++ (for (i <- overlap._1; j <- overlap._2)
-            yield i ++ j) ++ notInOverlap._2
-        }) getOrElse toRepair ++ repairWith
-
-      case _ => throw new IllegalStateException("Cannot repair directionless fold")
-    }
-  }
+  override def toString = s"{ ${layers mkString ",\n\n\t"} }"
 }
 
 object CreasePattern {
   def from(creaseLines: Fold*): CreasePattern = {
-    new CreasePattern(List(Set[Fold](creaseLines: _*)))
+    new CreasePattern(Seq(PaperLayer(creaseLines)))
   }
 
-  def apply(layers: Set[Fold]*): CreasePattern = {
-    new CreasePattern(layers.toList)
+  def apply(layers: PaperLayer*): CreasePattern = {
+    new CreasePattern(layers.toSeq)
+  }
+
+  def repair(old: Seq[PaperLayer], `new`: Seq[PaperLayer], foldType: FoldType): Seq[PaperLayer] = {
+
+    var mergedMap = Map[Int, Seq[Option[PaperLayer]]]()
+
+    @tailrec
+    def findCrossover(crossover: Int): Int = {
+      def validCrossover(a: Seq[PaperLayer], b: Seq[PaperLayer]) = {
+        val maybeLayers = a zip b map tupled((left, right) => left mergeWith right)
+        mergedMap += (crossover -> maybeLayers)
+
+        maybeLayers forall (_.isDefined)
+      }
+
+      if (foldType == ValleyFold) {
+        if (validCrossover(old take crossover, `new` takeRight crossover))
+          crossover
+        else
+          findCrossover(crossover - 1)
+      } else {
+        if (validCrossover(old takeRight crossover, `new` take crossover))
+          crossover
+        else
+          findCrossover(crossover - 1)
+      }
+    }
+
+    val crossover = findCrossover(math.min(old.size, `new`.size))
+
+    if (foldType == ValleyFold) {
+      val (top, bottom) = (`new` dropRight crossover, old drop crossover)
+      top ++ (mergedMap(crossover) map (_.get)) ++ bottom
+
+    } else {
+      val (top, bottom) = (old dropRight crossover, `new` drop crossover)
+      top ++ (mergedMap(crossover) map (_.get)) ++ bottom
+    }
   }
 }

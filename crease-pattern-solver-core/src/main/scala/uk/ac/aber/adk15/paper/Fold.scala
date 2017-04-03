@@ -29,9 +29,9 @@ case class Fold(start: Point, end: Point, foldType: FoldType) {
       def onSameLine(a: Point, b: Point, c: Point) = abs(a gradientTo b) == abs(b gradientTo c)
 
       foldType == otherFoldType && {
-        if (start == otherStart)
+        if (start == otherStart || end == otherStart)
           onSameLine(start, end, otherEnd)
-        else if (end == otherEnd)
+        else if (end == otherEnd || end == otherEnd)
           onSameLine(start, end, otherStart)
         else
           onSameLine(start, end, otherStart) && onSameLine(start, end, otherEnd)
@@ -43,9 +43,9 @@ case class Fold(start: Point, end: Point, foldType: FoldType) {
   override def hashCode(): Int = {
     var hash = 17
 
-    lazy val m = abs(start gradientTo end)
+    val m = start gradientTo end
 
-    hash = hash * 31 + m.hashCode()
+    hash = hash * 31 + abs(m).hashCode()
     hash = hash * 31 + (start.y - (m * start.x)).hashCode()
     hash = hash * 31 + foldType.hashCode()
 
@@ -57,9 +57,8 @@ case class Fold(start: Point, end: Point, foldType: FoldType) {
   def toSet = Set(start, end)
 
   def crease: Fold = foldType match {
-    case PaperBoundary             => this
-    case MountainFold | ValleyFold => Fold(start, end, CreasedFold)
-    case CreasedFold               => throw new IllegalFoldException(this)
+    case PaperBoundary | CreasedFold => this
+    case MountainFold | ValleyFold   => Fold(start, end, CreasedFold)
   }
 }
 
@@ -88,7 +87,7 @@ case object CreasedFold extends FoldType {
 }
 
 case object PaperBoundary extends FoldType {
-  override def toString = "---"
+  override def toString = "--"
 }
 
 /**

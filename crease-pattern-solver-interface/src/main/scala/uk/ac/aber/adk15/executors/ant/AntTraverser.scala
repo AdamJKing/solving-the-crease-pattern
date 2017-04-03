@@ -42,7 +42,7 @@ class AntTraverserImpl @Inject()(diceRollService: DiceRollService) extends AntTr
                                visitedNodes: List[FoldNode]): Option[List[Fold]] = {
 
     val isEndState     = currentNode.children.isEmpty
-    val isSuccessState = currentNode.model.creases.isEmpty
+    val isSuccessState = currentNode.model.folds.isEmpty
 
     if (isEndState) {
       if (isSuccessState) {

@@ -19,7 +19,7 @@ case class Point(x: Double, y: Double) {
     point.x == x && point.y == y
   }
 
-  override def toString = s"{$x, $y}"
+  override def toString = f"{ $x% 6.1f, $y% 6.1f }"
 }
 
 object Point {

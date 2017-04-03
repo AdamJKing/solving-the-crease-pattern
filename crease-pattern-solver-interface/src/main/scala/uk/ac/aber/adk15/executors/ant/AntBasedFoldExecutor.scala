@@ -3,13 +3,13 @@ package uk.ac.aber.adk15.executors.ant
 import com.google.inject.Inject
 import com.typesafe.scalalogging.Logger
 import uk.ac.aber.adk15.model.Config
-import uk.ac.aber.adk15.paper.{Fold, Foldable}
+import uk.ac.aber.adk15.paper.{CreasePattern, Fold}
 import uk.ac.aber.adk15.services.FoldSelectionService
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait AntBasedFoldExecutor {
-  def findFoldOrder(creasePattern: Foldable)(
+  def findFoldOrder(creasePattern: CreasePattern)(
       implicit executionContext: ExecutionContext): Future[Option[List[Fold]]]
 }
 
@@ -20,7 +20,7 @@ class AntBasedFoldExecutorImpl @Inject()(antTraverser: AntTraverser,
 
   private val logger = Logger[AntBasedFoldExecutorImpl]
 
-  override def findFoldOrder(creasePattern: Foldable)(
+  override def findFoldOrder(creasePattern: CreasePattern)(
       implicit executionContext: ExecutionContext): Future[Option[List[Fold]]] = {
 
     val operationTreeRoot = FoldNode(creasePattern, None)(implicitly(foldSelectionService))
