@@ -1,7 +1,6 @@
 package uk.ac.aber.adk15.model
 
 import uk.ac.aber.adk15.CommonFlatSpec
-import uk.ac.aber.adk15.model.ConfigConstants._
 
 class ConfigurationSpec extends CommonFlatSpec {
 
@@ -9,24 +8,16 @@ class ConfigurationSpec extends CommonFlatSpec {
     // given
     val invalidMaxThreads = -20
 
-    // when
-    val config = Config(invalidMaxThreads)
-
     // then
-    config.maxThreads should not be invalidMaxThreads
-    config.maxThreads shouldBe MaxThreadsMin
+    assertThrows[IllegalArgumentException](Config(invalidMaxThreads))
   }
 
   "The max threads config" should "be set to max if max threads set above max" in {
     // given
     val invalidMaxThreads = 300
 
-    // when
-    val config = Config(invalidMaxThreads)
-
     // then
-    config.maxThreads should not be invalidMaxThreads
-    config.maxThreads shouldBe MaxThreadsMax
+    assertThrows[IllegalArgumentException](Config(invalidMaxThreads))
   }
 
   "The max threads config" should "be set to the desired value if that value is valid" in {

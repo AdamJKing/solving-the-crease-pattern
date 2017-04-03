@@ -21,7 +21,7 @@ class AntBasedFoldExecutorSpec extends CommonAsyncSpec {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    antBasedFoldExecutor = new AntBasedFoldExecutorImpl(antTraverser, foldSelectionService, config)
+    antBasedFoldExecutor = new AntBasedFoldExecutorImpl(antTraverser, foldSelectionService)
   }
 
   it should "eventually return the discovered fold order if one exists" in {

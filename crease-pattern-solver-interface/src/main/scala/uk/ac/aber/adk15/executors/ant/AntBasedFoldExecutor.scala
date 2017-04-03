@@ -14,8 +14,7 @@ trait AntBasedFoldExecutor {
 }
 
 class AntBasedFoldExecutorImpl @Inject()(antTraverser: AntTraverser,
-                                         foldSelectionService: FoldSelectionService,
-                                         config: Config)
+                                         foldSelectionService: FoldSelectionService)
     extends AntBasedFoldExecutor {
 
   private val logger = Logger[AntBasedFoldExecutorImpl]
@@ -25,10 +24,9 @@ class AntBasedFoldExecutorImpl @Inject()(antTraverser: AntTraverser,
 
     val operationTreeRoot = FoldNode(creasePattern, None)(implicitly(foldSelectionService))
 
-    logger info s"Starting ant colony with ${config.maxThreads} ants."
+    logger info s"Starting ant colony with $maxAnts ants."
     Future.firstCompletedOf {
-      List.range(0, config.maxThreads) map (_ =>
-        Future(antTraverser traverseTree operationTreeRoot))
+      List.range(0, maxAnts) map (_ => Future(antTraverser traverseTree operationTreeRoot))
     }
   }
 }

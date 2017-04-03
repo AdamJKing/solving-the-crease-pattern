@@ -24,7 +24,7 @@ class ApplicationControllerSpec extends CommonFlatSpec {
   override def beforeEach(): Unit = {
     super.beforeEach()
     applicationController =
-      new ApplicationControllerImpl(config, antBasedFoldExecutor, creasePatternParser)
+      new ApplicationControllerImpl(antBasedFoldExecutor, creasePatternParser)
 
     given(config.maxThreads) willReturn 8
   }
@@ -33,38 +33,39 @@ class ApplicationControllerSpec extends CommonFlatSpec {
     // given
     given(
       antBasedFoldExecutor
-        .findFoldOrder(any[CreasePattern])(implicitly(any[ExecutionContext])))
+        .findFoldOrder(any[CreasePattern], anyInt)(any[ExecutionContext]))
       .willReturn(mock[Future[Option[List[Fold]]]])
 
     // when
-    applicationController.execute(mock[File])
+    applicationController.execute(mock[File], config)
 
     // then
-    verify(config).maxThreads
+    verify(config, times(2)).maxThreads
   }
 
   it should "successfully find a fold order if there are no issues" in {
     // given
     given(
       antBasedFoldExecutor
-        .findFoldOrder(any[CreasePattern])(implicitly(any[ExecutionContext])))
+        .findFoldOrder(any[CreasePattern], anyInt)(any[ExecutionContext]))
       .willReturn(mock[Future[Option[List[Fold]]]])
 
     // when
-    applicationController.execute(mock[File])
+    applicationController.execute(mock[File], config)
 
     // then
-    verify(antBasedFoldExecutor).findFoldOrder(any[CreasePattern])(
-      implicitly(any[ExecutionContext]))
+    verify(antBasedFoldExecutor).findFoldOrder(any[CreasePattern], anyInt)(any[ExecutionContext])
   }
 
   it should "throw an exception if one occurs during the execution" in {
     // given
     val deadFuture = Future.failed(new IllegalArgumentException)
-    given((antBasedFoldExecutor findFoldOrder any[CreasePattern])(any[ExecutionContext])) willReturn deadFuture
+    given(
+      antBasedFoldExecutor
+        .findFoldOrder(any[CreasePattern], anyInt)(any[ExecutionContext])) willReturn deadFuture
 
     // then
-    applicationController.execute(mock[File]) shouldBe deadFuture
+    applicationController.execute(mock[File], config) shouldBe deadFuture
   }
 
   it should "use the crease pattern parsed from the crease pattern file" in {
@@ -72,7 +73,7 @@ class ApplicationControllerSpec extends CommonFlatSpec {
     val creasePatternFile = mock[File]
 
     // when
-    applicationController.execute(creasePatternFile)
+    applicationController.execute(creasePatternFile, config)
 
     // then
     verify(creasePatternParser) parseFile creasePatternFile
