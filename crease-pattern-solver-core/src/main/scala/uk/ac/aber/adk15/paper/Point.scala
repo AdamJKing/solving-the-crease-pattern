@@ -19,7 +19,7 @@ case class Point(x: Double, y: Double) {
     point.x == x && point.y == y
   }
 
-  override def toString = s"{$x, $y}"
+  override def toString = f"{ $x% 6.1f, $y% 6.1f }"
 }
 
 object Point {
@@ -59,6 +59,8 @@ object Point {
         case (0, _)   => 0
         case (dy, dx) => dy / dx
       }
+
+      @inline final def distanceTo(p2: Point): Double = abs(p.x - p2.x) + abs(p.y - p2.y)
 
       /**
         * Returns the reflection the given point over the line defined by { start, end }.

@@ -1,10 +1,10 @@
 package uk.ac.aber.adk15.executors.ant
 
 import uk.ac.aber.adk15.paper.CreasePatternPredef.Helpers._
-import uk.ac.aber.adk15.paper.{Fold, Foldable}
+import uk.ac.aber.adk15.paper.{CreasePattern, Fold}
 import uk.ac.aber.adk15.services.FoldSelectionService
 
-case class FoldNode(model: Foldable, fold: Option[Fold])(
+case class FoldNode(model: CreasePattern, fold: Option[Fold])(
     implicit val foldSelectionService: FoldSelectionService) {
 
   lazy val children: Set[FoldNode] = {

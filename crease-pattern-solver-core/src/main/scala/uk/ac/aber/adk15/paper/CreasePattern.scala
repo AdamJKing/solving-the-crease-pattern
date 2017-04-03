@@ -1,88 +1,114 @@
 package uk.ac.aber.adk15.paper
 
 import com.typesafe.scalalogging.Logger
-import uk.ac.aber.adk15.paper.Point.Helpers._
 
-class CreasePattern(val layers: List[Set[Fold]]) extends Foldable {
+import scala.Function.tupled
+import scala.annotation.tailrec
+
+class CreasePattern(val layers: Seq[PaperLayer]) {
+  import CreasePattern._
 
   private val logger = Logger[CreasePattern]
+//
+//  private val edges: Seq[Fold] = layers flatMap (layer =>
+//    layer.creasedFolds() ++ layer.valleyFolds() ++ layer.creasedFolds() ++ layer.paperBoundaries())
 
-  private val edges: List[Fold] = (layers reduce (_ ++ _)).toList
+  def folds: Set[Fold] =
+    layers.flatMap(layer => layer.mountainFolds() ++ layer.valleyFolds())(collection.breakOut)
 
-  override def creases: Set[Fold] =
-    layers map (_ filter (fold => {
-      fold.foldType == MountainFold || fold.foldType == ValleyFold
-    })) reduce (_ ++ _)
+  def fold(edge: Fold): CreasePattern = {
+    validateLegalFold(edge)
 
-  override def fold(edge: Fold): CreasePattern = {
-    validateLegalEdge(edge)
+    val (layersToFold, layersToLeave) = layers partition (_ contains edge)
+    val (left, right)                 = (layersToFold map (_.segmentOnLine(edge.start, edge.end))).unzip
 
-    @inline def isOnLeft(e: Fold) =
-      (e.toSet map (_ compareTo (edge.start, edge.end))).sum > 0
+    val maxAreaOfLeft  = (left map (_.surfaceArea())).max
+    val maxAreaOfRight = (right map (_.surfaceArea())).max
 
-    @inline def isOnRight(e: Fold) =
-      (e.toSet map (_ compareTo (edge.start, edge.end))).sum < 0
+    val newLayers =
+      if (maxAreaOfLeft < maxAreaOfRight) {
+        logger debug s"Folding to the right over $edge"
 
-    @inline def isOnCentre(e: Fold) =
-      (e.toSet map (_ compareTo (edge.start, edge.end))).sum == 0
+        if (edge.foldType == ValleyFold)
+          (left map (_ rotateAround (edge.start, edge.end))) ++ right
+        else
+          right ++ (left map (_ rotateAround (edge.start, edge.end)))
+      } else {
+        logger debug s"Folding to the left over $edge"
 
-    val foldedCreasePattern =
-      (layers foldRight List[Set[Fold]]())((layer, acc) => {
-        val creasedEdges = layer withFilter isOnCentre map (_.crease)
+        if (edge.foldType == ValleyFold)
+          (right map (_ rotateAround (edge.start, edge.end))) ++ left
+        else
+          left ++ (right map (_ rotateAround (edge.start, edge.end)))
+      }
 
-        val static = (layer filter isOnRight) ++ creasedEdges
-        val folded = (layer withFilter isOnLeft map { rotateEdge(_, axis = edge) }) ++ creasedEdges
-
-        (folded.headOption, static.headOption) match {
-          case (Some(_), Some(_)) => folded +: acc :+ static
-          case (Some(_), None)    => folded +: acc
-          case (None, Some(_))    => acc :+ static
-          case (None, None)       => acc
-        }
-      })
-
-    logger debug s"$foldedCreasePattern"
-    new CreasePattern(foldedCreasePattern)
+    new CreasePattern(repair(layersToLeave, newLayers, edge.foldType))
   }
+
+  private def validateLegalFold(fold: Fold) =
+    if (!(folds contains fold)) {
+      logger error s"Could not fold $fold, folds available were $folds"
+      throw new IllegalFoldException(fold)
+    }
+
+  def size: Int = layers.length
 
   override def equals(obj: Any): Boolean = obj match {
     case other: CreasePattern => other.layers == this.layers
     case _                    => false
   }
 
-  override def toString = s"{ ${layers mkString ","} }"
-
-  def size: Int = layers.length
-
-  private def validateLegalEdge(edge: Fold) = {
-    edges find (_ == edge) match {
-      case Some(Fold(_, _, PaperBoundary)) => throw new IllegalCreaseException(edge)
-      case Some(Fold(_, _, CreasedFold))   => throw new EdgeAlreadyCreasedException(edge)
-      case _                               => true
-    }
+  override def hashCode(): Int = {
+    17 * 31 * layers.hashCode()
   }
 
-  private def rotateEdge(edge: Fold, axis: Fold) = Fold(
-    edge.start reflectedOver (axis.start, axis.end),
-    edge.end reflectedOver (axis.start, axis.end),
-    edge.foldType match {
-      // when we fold a piece of paper, all unfolded creases receive the inverse assignment
-      case MountainFold => ValleyFold
-      case ValleyFold   => MountainFold
-
-      // those already creased, or a physical boundary, will not change when folded
-      case CreasedFold   => CreasedFold
-      case PaperBoundary => PaperBoundary
-    }
-  )
+  override def toString = s"{ ${layers mkString ",\n\n\t"} }"
 }
 
 object CreasePattern {
   def from(creaseLines: Fold*): CreasePattern = {
-    new CreasePattern(List(Set[Fold](creaseLines: _*)))
+    new CreasePattern(Seq(PaperLayer(creaseLines)))
   }
 
-  def apply(layers: Set[Fold]*): CreasePattern = {
-    new CreasePattern(layers.toList)
+  def apply(layers: PaperLayer*): CreasePattern = {
+    new CreasePattern(layers.toSeq)
+  }
+
+  def repair(old: Seq[PaperLayer], `new`: Seq[PaperLayer], foldType: FoldType): Seq[PaperLayer] = {
+
+    var mergedMap = Map[Int, Seq[Option[PaperLayer]]]()
+
+    @tailrec
+    def findCrossover(crossover: Int): Int = {
+      def validCrossover(a: Seq[PaperLayer], b: Seq[PaperLayer]) = {
+        val maybeLayers = a zip b map tupled((left, right) => left mergeWith right)
+        mergedMap += (crossover -> maybeLayers)
+
+        maybeLayers forall (_.isDefined)
+      }
+
+      if (foldType == ValleyFold) {
+        if (validCrossover(old take crossover, `new` takeRight crossover))
+          crossover
+        else
+          findCrossover(crossover - 1)
+      } else {
+        if (validCrossover(old takeRight crossover, `new` take crossover))
+          crossover
+        else
+          findCrossover(crossover - 1)
+      }
+    }
+
+    val crossover = findCrossover(math.min(old.size, `new`.size))
+
+    if (foldType == ValleyFold) {
+      val (top, bottom) = (`new` dropRight crossover, old drop crossover)
+      top ++ (mergedMap(crossover) map (_.get)) ++ bottom
+
+    } else {
+      val (top, bottom) = (old dropRight crossover, `new` drop crossover)
+      top ++ (mergedMap(crossover) map (_.get)) ++ bottom
+    }
   }
 }
