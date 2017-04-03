@@ -2,8 +2,10 @@ package uk.ac.aber.adk15.controllers
 
 import java.io.File
 
-import com.github.tototoshi.csv.CSVReader
 import com.typesafe.scalalogging.Logger
+import org.json4s._
+import org.json4s.native.JsonMethods._
+import uk.ac.aber.adk15.model.serialisers.FoldSerialiser
 import uk.ac.aber.adk15.paper._
 
 trait CreasePatternParser {
@@ -15,21 +17,12 @@ class CreasePatternParserImpl extends CreasePatternParser {
   private val logger = Logger[CreasePatternParser]
 
   override def parseFile(creasePatternFile: File): CreasePattern = {
-    val reader = CSVReader open creasePatternFile
+    logger info s"Reading crease pattern from file: ${creasePatternFile.getName}."
 
-    logger info "Reading crease pattern from file."
-
-    val creasePattern = new CreasePattern(List((reader allWithHeaders () map (line => {
-      val A = new Point(line("X1").toDouble, line("Y1").toDouble)
-      val B = new Point(line("X2").toDouble, line("Y2").toDouble)
-      val foldType = line("Type") match {
-        case "Mountain" => MountainFold
-        case "Valley"   => ValleyFold
-        case "Boundary" => PaperBoundary
-      }
-
-      Fold(A, B, foldType)
-    })).toSet))
+    implicit val defaultFormats      = DefaultFormats + FoldSerialiser
+    val creasePattern: CreasePattern = parse(creasePatternFile).extract[CreasePattern] // OrElse {
+//      throw new IllegalStateException("Could not load crease pattern")
+//    }
 
     logger debug s"I read a crease pattern looking like $creasePattern"
 

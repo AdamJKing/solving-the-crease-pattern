@@ -17,7 +17,7 @@ class CreasePatternComplexitySpec extends CommonFlatSpec {
 
     // then
     foldedCreasePattern should be(
-      CreasePattern(
+      CreasePattern(Seq(
         PaperLayer(
           Seq(
             Point(0, 100) ~~ Point(100, 0),
@@ -30,8 +30,7 @@ class CreasePatternComplexitySpec extends CommonFlatSpec {
             Point(100, 100) -- Point(0, 100),
             Point(100, 0) -- Point(100, 100)
           ))
-      )
-    )
+      )))
   }
 
   "A crease pattern with multiple layered folds" should "be fold-able" in {
@@ -78,7 +77,7 @@ class CreasePatternComplexitySpec extends CommonFlatSpec {
     // then
     withClue(foldedCreasePattern)(foldedCreasePattern.size should be(6))
     foldedCreasePattern should be(
-      CreasePattern(
+      CreasePattern(Seq(
         PaperLayer(
           Seq(Point(50.0, 50.0) -- Point(100.0, 50.0),
               Point(50.0, 50.0) ~~ Point(75.0, 25.0),
@@ -111,6 +110,6 @@ class CreasePatternComplexitySpec extends CommonFlatSpec {
               Point(50.0, 50.0) ~~ Point(100.0, 0.0),
               Point(50.0, 50.0) ~~ Point(100.0, 100.0))
         )
-      ))
+      )))
   }
 }

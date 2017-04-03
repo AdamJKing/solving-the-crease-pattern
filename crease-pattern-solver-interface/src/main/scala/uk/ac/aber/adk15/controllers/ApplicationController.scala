@@ -23,6 +23,6 @@ class ApplicationControllerImpl @Inject()(private val antBasedFoldExecutor: AntB
       ExecutionContext.fromExecutor(new ForkJoinPool(config.maxThreads))
 
     val creasePattern = creasePatternParser parseFile creasePatternFile
-    antBasedFoldExecutor findFoldOrder (creasePattern, maxAnts = config.maxThreads)
+    antBasedFoldExecutor findFoldOrder (creasePattern, config.maxThreads)
   }
 }

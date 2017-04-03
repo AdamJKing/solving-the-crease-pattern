@@ -5,7 +5,7 @@ import com.typesafe.scalalogging.Logger
 import scala.Function.tupled
 import scala.annotation.tailrec
 
-class CreasePattern(val layers: Seq[PaperLayer]) {
+case class CreasePattern(layers: Seq[PaperLayer]) {
   import CreasePattern._
 
   private val logger = Logger[CreasePattern]
@@ -62,16 +62,12 @@ class CreasePattern(val layers: Seq[PaperLayer]) {
     17 * 31 * layers.hashCode()
   }
 
-  override def toString = s"{ ${layers mkString ",\n\n\t"} }"
+  override def toString = s"{\n${layers mkString ",\n\n\t"}\n}"
 }
 
 object CreasePattern {
   def from(creaseLines: Fold*): CreasePattern = {
     new CreasePattern(Seq(PaperLayer(creaseLines)))
-  }
-
-  def apply(layers: PaperLayer*): CreasePattern = {
-    new CreasePattern(layers.toSeq)
   }
 
   def repair(old: Seq[PaperLayer], `new`: Seq[PaperLayer], foldType: FoldType): Seq[PaperLayer] = {

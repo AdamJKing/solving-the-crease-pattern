@@ -72,7 +72,7 @@ case class Fold(start: Point, end: Point, foldType: FoldType) {
   * - Paper boundary: This is a physical feature of the paper, ie, the *actual* edge of the paper
   *
   */
-sealed trait FoldType
+sealed abstract class FoldType {}
 
 case object MountainFold extends FoldType {
   override def toString = "/\\"

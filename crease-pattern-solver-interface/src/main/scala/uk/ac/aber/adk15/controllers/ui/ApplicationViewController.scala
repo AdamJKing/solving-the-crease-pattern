@@ -11,13 +11,14 @@ import uk.ac.aber.adk15.view.{ApplicationView, ConfigurationView}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
-import scalafx.scene.control.Alert
 import scalafx.scene.control.Alert.AlertType
+import scalafx.scene.control.{Alert, Label}
 import scalafx.stage.FileChooser
 import scalafxml.core.macros.sfxml
 
 @sfxml
-class ApplicationViewController(private val mainController: ApplicationController) {
+class ApplicationViewController(private val mainController: ApplicationController,
+                                private val loadedCreasePatternLabel: Label) {
 
   private val logger = Logger[ApplicationViewController]
 
@@ -47,6 +48,7 @@ class ApplicationViewController(private val mainController: ApplicationControlle
   def loadCreasePattern(): Unit = {
     val fileChooser = new FileChooser
     creasePatternFile = Option(fileChooser.showOpenDialog(ApplicationView))
+    loadedCreasePatternLabel.text = creasePatternFile map (_.getName) getOrElse "Error Loading crease file"
   }
 
   private def showExceptionMessage(ex: Throwable): Unit = {
