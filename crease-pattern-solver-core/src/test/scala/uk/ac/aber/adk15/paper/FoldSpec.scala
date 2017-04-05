@@ -30,11 +30,17 @@ class FoldSpec extends FlatSpec with Matchers {
   }
 
   "Two unfolded edges with different values" should "not be equal" in {
-    val edgeOne = Point(0, 0) /\ Point(0, 1)
-    val edgeTwo = Point(1, 1) \/ Point(0, 0)
+    val edgeOne   = Point(0, 0) /\ Point(0, 1)
+    val edgeTwo   = Point(1, 1) \/ Point(0, 0)
+    val edgeThree = Point(2, 2) /\ Point(1, 1)
+
+    Point(25, 25) /\ Point(50, 50) should not equal Point(50, 50) \/ Point(25, 25)
+    Point(0, 100) \/ Point(50, 50) should not equal Point(50, 50) \/ Point(25, 25)
+    Point(25, 25) \/ Point(50, 50) should not equal Point(25, 25) ~~ Point(50, 0)
 
     edgeOne should not equal edgeTwo
     edgeOne.hashCode() should not equal edgeTwo.hashCode()
+    edgeTwo should not equal edgeThree
   }
 
   "Two folded edges with the same values" should "be equal" in {

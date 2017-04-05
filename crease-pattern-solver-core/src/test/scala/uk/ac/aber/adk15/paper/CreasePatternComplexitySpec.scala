@@ -17,15 +17,15 @@ class CreasePatternComplexitySpec extends CommonFlatSpec {
 
     // then
     foldedCreasePattern should be(
-      CreasePattern(Seq(
+      CreasePattern(List(
         PaperLayer(
-          Seq(
+          List(
             Point(0, 100) ~~ Point(100, 0),
             Point(100, 100) -- Point(0, 100),
             Point(100, 0) -- Point(100, 100)
           )),
         PaperLayer(
-          Seq(
+          List(
             Point(0, 100) ~~ Point(100, 0),
             Point(100, 100) -- Point(0, 100),
             Point(100, 0) -- Point(100, 100)
@@ -49,8 +49,8 @@ class CreasePatternComplexitySpec extends CommonFlatSpec {
 
   "A crease pattern with multiple layered folds" should "be fold-able regardless of direction" in {
     // given
-    val RotatedMultiLayeredUnfoldedPaper: CreasePattern =
-      CreasePattern from (
+    val RotatedMultiLayeredUnfoldedPaper: CreasePattern = CreasePattern from (
+      PaperLayer from (
         Point(0, 0) -- Point(100, 0),
         Point(100, 0) -- Point(100, 100),
         Point(100, 100) -- Point(50, 100),
@@ -64,6 +64,7 @@ class CreasePatternComplexitySpec extends CommonFlatSpec {
         Point(0, 100) \/ Point(25, 75),
         Point(50, 50) \/ Point(100, 0),
         Point(25, 75) /\ Point(50, 100)
+      )
     )
 
     // when
@@ -77,38 +78,38 @@ class CreasePatternComplexitySpec extends CommonFlatSpec {
     // then
     withClue(foldedCreasePattern)(foldedCreasePattern.size should be(6))
     foldedCreasePattern should be(
-      CreasePattern(Seq(
+      CreasePattern(List(
         PaperLayer(
-          Seq(Point(50.0, 50.0) -- Point(100.0, 50.0),
-              Point(50.0, 50.0) ~~ Point(75.0, 25.0),
-              Point(100.0, 50.0) ~~ Point(75.0, 25.0))
+          List(Point(50.0, 50.0) -- Point(100.0, 50.0),
+               Point(50.0, 50.0) ~~ Point(75.0, 25.0),
+               Point(100.0, 50.0) ~~ Point(75.0, 25.0))
         ),
         PaperLayer(
-          Seq(Point(100.0, 50.0) -- Point(50.0, 50.0),
-              Point(50.0, 50.0) ~~ Point(75.0, 25.0),
-              Point(75.0, 25.0) ~~ Point(100.0, 50.0))
+          List(Point(100.0, 50.0) -- Point(50.0, 50.0),
+               Point(50.0, 50.0) ~~ Point(75.0, 25.0),
+               Point(75.0, 25.0) ~~ Point(100.0, 50.0))
         ),
         PaperLayer(
-          Seq(Point(100.0, 50.0) -- Point(100.0, 100.0),
-              Point(75.0, 25.0) ~~ Point(50.0, 50.0),
-              Point(100.0, 100.0) ~~ Point(50.0, 50.0),
-              Point(100.0, 50.0) ~~ Point(75.0, 25.0))
+          List(Point(100.0, 50.0) -- Point(100.0, 100.0),
+               Point(75.0, 25.0) ~~ Point(50.0, 50.0),
+               Point(100.0, 100.0) ~~ Point(50.0, 50.0),
+               Point(100.0, 50.0) ~~ Point(75.0, 25.0))
         ),
         PaperLayer(
-          Seq(Point(100.0, 100.0) -- Point(100.0, 50.0),
-              Point(75.0, 25.0) ~~ Point(50.0, 50.0),
-              Point(50.0, 50.0) ~~ Point(100.0, 100.0),
-              Point(75.0, 25.0) ~~ Point(100.0, 50.0))
+          List(Point(100.0, 100.0) -- Point(100.0, 50.0),
+               Point(75.0, 25.0) ~~ Point(50.0, 50.0),
+               Point(50.0, 50.0) ~~ Point(100.0, 100.0),
+               Point(75.0, 25.0) ~~ Point(100.0, 50.0))
         ),
         PaperLayer(
-          Seq(Point(100.0, 100.0) -- Point(100.0, 0.0),
-              Point(50.0, 50.0) ~~ Point(100.0, 0.0),
-              Point(100.0, 100.0) ~~ Point(50.0, 50.0))
+          List(Point(100.0, 100.0) -- Point(100.0, 0.0),
+               Point(50.0, 50.0) ~~ Point(100.0, 0.0),
+               Point(100.0, 100.0) ~~ Point(50.0, 50.0))
         ),
         PaperLayer(
-          Seq(Point(100.0, 0.0) -- Point(100.0, 100.0),
-              Point(50.0, 50.0) ~~ Point(100.0, 0.0),
-              Point(50.0, 50.0) ~~ Point(100.0, 100.0))
+          List(Point(100.0, 0.0) -- Point(100.0, 100.0),
+               Point(50.0, 50.0) ~~ Point(100.0, 0.0),
+               Point(50.0, 50.0) ~~ Point(100.0, 100.0))
         )
       )))
   }

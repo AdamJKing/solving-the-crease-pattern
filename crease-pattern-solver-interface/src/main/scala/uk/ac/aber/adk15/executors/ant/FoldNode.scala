@@ -7,12 +7,10 @@ import uk.ac.aber.adk15.services.FoldSelectionService
 case class FoldNode(model: CreasePattern, fold: Option[Fold])(
     implicit val foldSelectionService: FoldSelectionService) {
 
-  private val newModel = fold.map(f => model <~~ f).getOrElse(model)
-
   lazy val children: Set[FoldNode] = {
-    foldSelectionService getAvailableOperations newModel map (childFold =>
-      FoldNode(newModel, Some(childFold)))
+    foldSelectionService getAvailableOperations model map (childFold =>
+      FoldNode(model <~~ childFold, Some(childFold)))
   }
 
-  def allFoldsAreComplete(): Boolean = newModel.folds.isEmpty
+  def allFoldsAreComplete(): Boolean = model.folds.isEmpty
 }

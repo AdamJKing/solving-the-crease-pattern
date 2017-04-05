@@ -5,16 +5,13 @@ import com.typesafe.scalalogging.Logger
 import scala.Function.tupled
 import scala.annotation.tailrec
 
-case class CreasePattern(layers: Seq[PaperLayer]) {
+case class CreasePattern(layers: List[PaperLayer]) {
   import CreasePattern._
 
   private val logger = Logger[CreasePattern]
-//
-//  private val edges: Seq[Fold] = layers flatMap (layer =>
-//    layer.creasedFolds() ++ layer.valleyFolds() ++ layer.creasedFolds() ++ layer.paperBoundaries())
 
   def folds: Set[Fold] =
-    layers.flatMap(layer => layer.mountainFolds() ++ layer.valleyFolds())(collection.breakOut)
+    layers.flatMap(layer => layer.mountainFolds ++ layer.valleyFolds)(collection.breakOut)
 
   def fold(edge: Fold): CreasePattern = {
     validateLegalFold(edge)
@@ -22,8 +19,8 @@ case class CreasePattern(layers: Seq[PaperLayer]) {
     val (layersToFold, layersToLeave) = layers partition (_ contains edge)
     val (left, right)                 = (layersToFold map (_.segmentOnLine(edge.start, edge.end))).unzip
 
-    val maxAreaOfLeft  = (left map (_.surfaceArea())).max
-    val maxAreaOfRight = (right map (_.surfaceArea())).max
+    val maxAreaOfLeft  = (left map (_.surfaceArea)).max
+    val maxAreaOfRight = (right map (_.surfaceArea)).max
 
     val newLayers =
       if (maxAreaOfLeft < maxAreaOfRight) {
@@ -66,17 +63,19 @@ case class CreasePattern(layers: Seq[PaperLayer]) {
 }
 
 object CreasePattern {
-  def from(creaseLines: Fold*): CreasePattern = {
-    new CreasePattern(Seq(PaperLayer(creaseLines)))
+  def from(paperLayers: PaperLayer*): CreasePattern = {
+    new CreasePattern(paperLayers.toList)
   }
 
-  def repair(old: Seq[PaperLayer], `new`: Seq[PaperLayer], foldType: FoldType): Seq[PaperLayer] = {
+  def repair(old: List[PaperLayer],
+             `new`: List[PaperLayer],
+             foldType: FoldType): List[PaperLayer] = {
 
-    var mergedMap = Map[Int, Seq[Option[PaperLayer]]]()
+    var mergedMap = Map[Int, List[Option[PaperLayer]]]()
 
     @tailrec
     def findCrossover(crossover: Int): Int = {
-      def validCrossover(a: Seq[PaperLayer], b: Seq[PaperLayer]) = {
+      def validCrossover(a: List[PaperLayer], b: List[PaperLayer]) = {
         val maybeLayers = a zip b map tupled((left, right) => left mergeWith right)
         mergedMap += (crossover -> maybeLayers)
 

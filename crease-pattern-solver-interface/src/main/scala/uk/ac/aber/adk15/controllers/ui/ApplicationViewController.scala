@@ -1,6 +1,6 @@
 package uk.ac.aber.adk15.controllers.ui
 
-import java.io.File
+import java.io.{File, PrintWriter, StringWriter}
 import javafx.application.Platform
 
 import com.typesafe.scalalogging.Logger
@@ -23,14 +23,14 @@ class ApplicationViewController(private val mainController: ApplicationControlle
   private val logger = Logger[ApplicationViewController]
 
   private var creasePatternFile: Option[File] = None
-  private var configuration: Config           = DefaultConfig
+  private var currentConfig: Config           = DefaultConfig
 
   def start(): Unit = {
     implicit val executionContext =
       ExecutionContext.fromExecutor((command: Runnable) => Platform.runLater(command))
 
     if (creasePatternFile.isDefined) {
-      mainController.execute(creasePatternFile.get, configuration) onComplete {
+      mainController.execute(creasePatternFile.get, currentConfig) onComplete {
         case Success(Some(result)) => // show result view
         case Success(None)         => showNoFoldOrderFoundMessage()
         case Failure(ex)           => showExceptionMessage(ex)
@@ -42,7 +42,7 @@ class ApplicationViewController(private val mainController: ApplicationControlle
   }
 
   def configure(): Unit = {
-    configuration = ConfigurationView.showConfigDialog() getOrElse configuration
+    currentConfig = ConfigurationView.showConfigDialog(default = currentConfig)
   }
 
   def loadCreasePattern(): Unit = {
@@ -55,7 +55,12 @@ class ApplicationViewController(private val mainController: ApplicationControlle
     new Alert(AlertType.Error) {
       title = "An exception occurred"
       headerText = s"${ex.getClass.getSimpleName}"
-      contentText = ex.getMessage
+      contentText = {
+        val sw = new StringWriter()
+        val pw = new PrintWriter(sw)
+        ex.printStackTrace(pw)
+        sw.toString
+      }
 
     } showAndWait
   }

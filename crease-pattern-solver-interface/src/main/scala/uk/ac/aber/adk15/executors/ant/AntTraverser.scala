@@ -26,12 +26,14 @@ class AntTraverserImpl @Inject()(diceRollService: DiceRollService) extends AntTr
   private val solutionFound: AtomicBoolean = new AtomicBoolean(false)
 
   override def traverseTree(root: FoldNode): Option[List[Fold]] = {
+    if (solutionFound.get) None
+
     val foldOrder = {
-      (Stream continually traverse(root, List(root))
+      (Stream continually traverse(root, List())
         dropWhile (_.isEmpty && !solutionFound.get)).head
     }
 
-    logger info "I found the goal!"
+    logger info s"I found the goal! foldOrder=$foldOrder"
     solutionFound compareAndSet (false, true)
 
     foldOrder
@@ -45,7 +47,7 @@ class AntTraverserImpl @Inject()(diceRollService: DiceRollService) extends AntTr
 
     if (isEndState) {
       if (currentNode.allFoldsAreComplete()) {
-        Some(visitedNodes withFilter (_.fold.isDefined) map (_.fold.get))
+        Some(visitedNodes :+ currentNode withFilter (_.fold.isDefined) map (_.fold.get))
       } else {
         logger info "Unsuccessful... updating weights!"
         nodeWeights(currentNode) = 0
@@ -53,7 +55,7 @@ class AntTraverserImpl @Inject()(diceRollService: DiceRollService) extends AntTr
         None
       }
     } else {
-      traverse(selectChild(currentNode.children), currentNode :: visitedNodes)
+      traverse(selectChild(currentNode.children), visitedNodes :+ currentNode)
     }
   }
 

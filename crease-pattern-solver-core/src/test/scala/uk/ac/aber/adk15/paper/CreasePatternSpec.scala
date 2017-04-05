@@ -9,34 +9,30 @@ class CreasePatternSpec extends CommonFlatSpec {
 
   "Crease patterns with the same edges" should "equal each other" in {
     // given
-    val first = CreasePattern(
-      PaperLayer(
-        Seq(
-          Point(0, 100) ~~ Point(100, 0),
-          Point(0, 0) -- Point(0, 100),
-          Point(100, 0) -- Point(0, 0)
-        )),
-      PaperLayer(
-        Seq(
-          Point(0, 100) ~~ Point(100, 0),
-          Point(0, 0) -- Point(0, 100),
-          Point(100, 0) -- Point(0, 0)
-        ))
+    val first = CreasePattern from (
+      PaperLayer from (
+        Point(0, 100) ~~ Point(100, 0),
+        Point(0, 0) -- Point(0, 100),
+        Point(100, 0) -- Point(0, 0)
+      ),
+      PaperLayer from (
+        Point(0, 100) ~~ Point(100, 0),
+        Point(0, 0) -- Point(0, 100),
+        Point(100, 0) -- Point(0, 0)
+      )
     )
 
-    val second = CreasePattern(
-      PaperLayer(
-        Seq(
-          Point(0.0, 100.0) ~~ Point(100.0, 0.0),
-          Point(0.0, 0.0) -- Point(0.0, 100.0),
-          Point(100.0, 0.0) -- Point(0.0, 0.0)
-        )),
-      PaperLayer(
-        Seq(
-          Point(0.0, 100.0) ~~ Point(100.0, 0.0),
-          Point(0.0, 100.0) -- Point(0.0, 0.0),
-          Point(0.0, 0.0) -- Point(100.0, 0.0)
-        ))
+    val second = CreasePattern from (
+      PaperLayer from (
+        Point(0.0, 100.0) ~~ Point(100.0, 0.0),
+        Point(0.0, 0.0) -- Point(0.0, 100.0),
+        Point(100.0, 0.0) -- Point(0.0, 0.0)
+      ),
+      PaperLayer from (
+        Point(0.0, 100.0) ~~ Point(100.0, 0.0),
+        Point(0.0, 100.0) -- Point(0.0, 0.0),
+        Point(0.0, 0.0) -- Point(100.0, 0.0)
+      )
     )
 
     // then

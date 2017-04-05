@@ -9,7 +9,7 @@ import scalafx.scene.layout.GridPane
 
 object ConfigurationView {
 
-  def showConfigDialog(): Option[Config] = {
+  def showConfigDialog(default: Config = Config.Constants.DefaultConfig): Config = {
 
     val dialog = new Dialog[Option[Config]]() {
       initOwner(ApplicationView)
@@ -17,10 +17,10 @@ object ConfigurationView {
     }
 
     // Set the button types.
-    dialog.dialogPane().buttonTypes = Seq(ButtonType.Apply, ButtonType.Cancel)
+    dialog.dialogPane().buttonTypes = List(ButtonType.Apply, ButtonType.Cancel)
 
     // Create the username and password labels and fields.
-    val maxThreadsSpinner = new Spinner[Int](0, 256, Config.Constants.MaxThreadsDefault)
+    val maxThreadsSpinner = new Spinner[Int](1, 256, default.maxThreads)
 
     val grid = new GridPane() {
       hgap = 10
@@ -46,11 +46,10 @@ object ConfigurationView {
     // won't compile if we don't do this.
     //
     result match {
-      case Some(Config(maxThreads)) => Some(Config(maxThreads))
-      case Some(value) =>
-        throw new IllegalStateException(s"Unexpected value returned from dialog: $value")
-
-      case None => None
+      case Some(Some(config: Config)) => config
+      case Some(_)                    => default
+      case unexpected =>
+        throw new IllegalStateException(s"${unexpected.getClass.getSimpleName} was unexpected")
     }
   }
 }
