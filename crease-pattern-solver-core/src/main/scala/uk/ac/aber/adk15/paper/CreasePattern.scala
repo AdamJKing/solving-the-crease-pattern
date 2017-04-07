@@ -16,8 +16,10 @@ case class CreasePattern(layers: List[PaperLayer]) {
   def fold(edge: Fold): CreasePattern = {
     validateLegalFold(edge)
 
-    val (layersToFold, layersToLeave) = layers partition (_ contains edge)
-    val (left, right)                 = (layersToFold map (_.segmentOnLine(edge.start, edge.end))).unzip
+    val (layersToFold, layersToLeave) = layers partition (layer =>
+      (layer contains edge) || !(layer coversFold edge))
+
+    val (left, right) = (layersToFold map (_.segmentOnLine(edge.start, edge.end))).unzip
 
     val maxAreaOfLeft  = (left map (_.surfaceArea)).max
     val maxAreaOfRight = (right map (_.surfaceArea)).max

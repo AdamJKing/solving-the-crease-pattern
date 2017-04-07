@@ -70,7 +70,7 @@ class CreasePatternComplexitySpec extends CommonFlatSpec {
     // when
     val creases = List(Point(0, 100) \/ Point(100, 0),
                        Point(100, 100) \/ Point(50, 50),
-                       Point(50, 0) \/ Point(75, 25))
+                       Point(100, 50) \/ Point(75, 25))
 
     val foldedCreasePattern =
       (creases foldLeft RotatedMultiLayeredUnfoldedPaper)(_ <~~ _)
