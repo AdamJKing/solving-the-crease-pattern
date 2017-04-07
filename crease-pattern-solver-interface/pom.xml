@@ -142,8 +142,8 @@
             <artifactId>scalafxml-guice-sfx8_2.12</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.tototoshi</groupId>
-            <artifactId>scala-csv_2.12</artifactId>
+            <groupId>org.json4s</groupId>
+            <artifactId>json4s-native_${scala.version.major}</artifactId>
         </dependency>
 
         <dependency>

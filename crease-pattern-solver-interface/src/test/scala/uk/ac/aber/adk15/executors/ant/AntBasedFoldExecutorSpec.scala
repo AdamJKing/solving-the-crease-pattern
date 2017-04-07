@@ -33,7 +33,7 @@ class AntBasedFoldExecutorSpec extends CommonAsyncSpec {
     given(antTraverser traverseTree any[FoldNode]) willReturn Some(myFoldOrder)
 
     // when
-    val futureFoldOrder = antBasedFoldExecutor findFoldOrder myCreasePattern
+    val futureFoldOrder = antBasedFoldExecutor findFoldOrder (myCreasePattern, 8)
 
     // then
     futureFoldOrder map { maybeFoldOrder =>
@@ -49,7 +49,7 @@ class AntBasedFoldExecutorSpec extends CommonAsyncSpec {
     given(antTraverser traverseTree any[FoldNode]) willReturn mock[Option[List[Fold]]]
 
     // when
-    (antBasedFoldExecutor findFoldOrder FlatCreasePattern) map { _ =>
+    (antBasedFoldExecutor findFoldOrder (FlatCreasePattern, 8)) map { _ =>
       //then
       verify(antTraverser traverseTree any[FoldNode], times(numThreads))
       succeed

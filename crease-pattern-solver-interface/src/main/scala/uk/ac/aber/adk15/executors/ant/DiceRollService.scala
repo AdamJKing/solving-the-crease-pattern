@@ -20,7 +20,7 @@ class DiceRollServiceImpl extends DiceRollService {
     var cumulativeProp = 0.0
     val diceRoll       = Random.nextDouble()
 
-    Stream.range(0, weights.length) find ((c: Int) => {
+    Stream.range(0, weights.length - 1) find ((c: Int) => {
 
       // an infinite value would arbitrarily trigger the condition,
       // we want to prevent any item from having an infinite chance of occurring
@@ -28,6 +28,6 @@ class DiceRollServiceImpl extends DiceRollService {
       cumulativeProp += probabilities(c)
       diceRoll <= cumulativeProp
 
-    }) getOrElse randomDiceRoll(0, weights.length).toInt
+    }) getOrElse randomDiceRoll(0, weights.length - 1).toInt
   }
 }

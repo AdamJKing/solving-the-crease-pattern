@@ -15,14 +15,9 @@ class FoldSelectionServiceSpec extends CommonFlatSpec {
     foldSelectionService = new FoldSelectionServiceImpl
   }
 
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    foldSelectionService = new FoldSelectionServiceImpl
-  }
-
   "Fold selection service" should "accurately find all available operations of flat crease pattern" in {
     // when
-    val availableOperations = foldSelectionService getAvailableOperations FlatCreasePattern
+    val availableOperations = foldSelectionService.getAvailableOperations(FlatCreasePattern)
 
     // then
     availableOperations shouldBe Set(Point(0, 100) /\ Point(100, 0))
@@ -30,23 +25,88 @@ class FoldSelectionServiceSpec extends CommonFlatSpec {
 
   "Fold selection service" should "accurately find all available operations of layered crease pattern" in {
     // when
-    val availableOperations = foldSelectionService getAvailableOperations MultiLayeredUnfoldedPaper
-    val nextAvailableOperations = foldSelectionService getAvailableOperations
-      (MultiLayeredUnfoldedPaper <~~ Point(0, 0) \/ Point(100, 100))
+    val availableOperations =
+      foldSelectionService.getAvailableOperations(MultiLayeredUnfoldedPaper)
+
+    val folded                  = MultiLayeredUnfoldedPaper <~~ Point(0, 0) \/ Point(100, 100)
+    val nextAvailableOperations = foldSelectionService.getAvailableOperations(folded)
+
+    val finalFolded              = folded <~~ Point(0, 50) /\ Point(25, 25)
+    val finalAvailableOperations = foldSelectionService.getAvailableOperations(finalFolded)
 
     // then
-    availableOperations shouldBe Set(
-      Point(0, 0) \/ Point(25, 25),
-      Point(25, 25) \/ Point(50, 50),
-      Point(50, 50) \/ Point(100, 100),
-      Point(0, 100) \/ Point(50, 50),
-      Point(50, 50) /\ Point(100, 0),
-      Point(0, 50) /\ Point(25, 25),
-      Point(25, 25) \/ Point(50, 0)
-    )
+    availableOperations should be(
+      Set(
+        Point(0, 0) \/ Point(25, 25),
+        Point(25, 25) \/ Point(50, 50),
+        Point(50, 50) \/ Point(100, 100),
+        Point(0, 100) \/ Point(50, 50),
+        Point(50, 50) /\ Point(100, 0),
+        Point(0, 50) /\ Point(25, 25),
+        Point(25, 25) \/ Point(50, 0)
+      ))
 
-    nextAvailableOperations shouldBe Set(Point(0, 50) /\ Point(25, 25),
-                                         Point(0, 100) \/ Point(50, 50))
+    nextAvailableOperations should {
+      contain(Point(0, 50) /\ Point(25, 25)) and contain(Point(0, 100) \/ Point(50, 50))
+    }
+
+    finalAvailableOperations should contain(Point(0, 100) \/ Point(50, 50))
   }
 
+  "When folding a fold that invalidates other folds those folds" should "no longer be available" in {
+    // given
+    val folded = MultiLayeredUnfoldedPaper <~~ (Point(0, 50) /\ Point(25, 25))
+
+    // when
+    val availableFolds = foldSelectionService.getAvailableOperations(folded)
+
+    // then
+    availableFolds should not contain (Point(25, 25) \/ Point(50, 50))
+    availableFolds should {
+      contain(Point(0, 100) \/ Point(50, 50)) and contain(Point(50, 50) /\ Point(100, 0))
+    }
+  }
+
+  "Blocked folds" should "not be reported as foldable" in {
+    // given
+    val folded = MultiLayeredUnfoldedPaper <~~
+      Point(0, 100) \/ Point(50, 50) <~~
+      Point(0, 50) /\ Point(25, 25)
+
+    // when
+    val availableFolds = foldSelectionService.getAvailableOperations(folded)
+
+    // then
+    availableFolds should not contain Point(50, 50) /\ Point(0, 0)
+  }
+
+  "Fold selection service" should "accurately find all available operations of layered crease pattern (alt.)" in {
+    // when
+    val availableOperations =
+      foldSelectionService.getAvailableOperations(MultiLayeredUnfoldedPaper)
+
+    val folded                  = MultiLayeredUnfoldedPaper <~~ Point(0, 0) \/ Point(100, 100)
+    val nextAvailableOperations = foldSelectionService.getAvailableOperations(folded)
+
+    val finalFolded              = folded <~~ Point(50, 50) \/ Point(0, 100)
+    val finalAvailableOperations = foldSelectionService.getAvailableOperations(finalFolded)
+
+    // then
+    availableOperations should be(
+      Set(
+        Point(0, 0) \/ Point(25, 25),
+        Point(25, 25) \/ Point(50, 50),
+        Point(50, 50) \/ Point(100, 100),
+        Point(0, 100) \/ Point(50, 50),
+        Point(50, 50) /\ Point(100, 0),
+        Point(0, 50) /\ Point(25, 25),
+        Point(25, 25) \/ Point(50, 0)
+      ))
+
+    nextAvailableOperations should {
+      contain(Point(0, 50) /\ Point(25, 25)) and contain(Point(0, 100) \/ Point(50, 50))
+    }
+
+    finalAvailableOperations should contain(Point(0, 50) /\ Point(25, 25))
+  }
 }

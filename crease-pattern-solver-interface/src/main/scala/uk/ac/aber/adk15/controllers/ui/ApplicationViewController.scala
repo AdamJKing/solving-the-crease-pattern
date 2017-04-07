@@ -1,6 +1,6 @@
 package uk.ac.aber.adk15.controllers.ui
 
-import java.io.File
+import java.io.{File, PrintWriter, StringWriter}
 import javafx.application.Platform
 
 import com.typesafe.scalalogging.Logger
@@ -11,25 +11,26 @@ import uk.ac.aber.adk15.view.{ApplicationView, ConfigurationView}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
-import scalafx.scene.control.Alert
 import scalafx.scene.control.Alert.AlertType
+import scalafx.scene.control.{Alert, Label}
 import scalafx.stage.FileChooser
 import scalafxml.core.macros.sfxml
 
 @sfxml
-class ApplicationViewController(private val mainController: ApplicationController) {
+class ApplicationViewController(private val mainController: ApplicationController,
+                                private val loadedCreasePatternLabel: Label) {
 
   private val logger = Logger[ApplicationViewController]
 
   private var creasePatternFile: Option[File] = None
-  private var configuration: Config           = DefaultConfig
+  private var currentConfig: Config           = DefaultConfig
 
   def start(): Unit = {
     implicit val executionContext =
       ExecutionContext.fromExecutor((command: Runnable) => Platform.runLater(command))
 
     if (creasePatternFile.isDefined) {
-      mainController.execute(creasePatternFile.get, configuration) onComplete {
+      mainController.execute(creasePatternFile.get, currentConfig) onComplete {
         case Success(Some(result)) => // show result view
         case Success(None)         => showNoFoldOrderFoundMessage()
         case Failure(ex)           => showExceptionMessage(ex)
@@ -41,19 +42,25 @@ class ApplicationViewController(private val mainController: ApplicationControlle
   }
 
   def configure(): Unit = {
-    configuration = ConfigurationView.showConfigDialog() getOrElse configuration
+    currentConfig = ConfigurationView.showConfigDialog(default = currentConfig)
   }
 
   def loadCreasePattern(): Unit = {
     val fileChooser = new FileChooser
     creasePatternFile = Option(fileChooser.showOpenDialog(ApplicationView))
+    loadedCreasePatternLabel.text = creasePatternFile map (_.getName) getOrElse "Error Loading crease file"
   }
 
   private def showExceptionMessage(ex: Throwable): Unit = {
     new Alert(AlertType.Error) {
       title = "An exception occurred"
       headerText = s"${ex.getClass.getSimpleName}"
-      contentText = ex.getMessage
+      contentText = {
+        val sw = new StringWriter()
+        val pw = new PrintWriter(sw)
+        ex.printStackTrace(pw)
+        sw.toString
+      }
 
     } showAndWait
   }

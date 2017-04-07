@@ -1,6 +1,0 @@
-X1,Y1,X2,Y2,Type
-0,0,100,0,Boundary
-100,0,100,100,Boundary
-100,100,0,100,Boundary
-0,100,0,0,Boundary
-0,100,100,0,Mountain

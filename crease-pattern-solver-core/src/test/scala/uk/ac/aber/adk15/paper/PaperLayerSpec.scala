@@ -21,7 +21,7 @@ class PaperLayerSpec extends CommonFlatSpec {
     * 0,100 ------ 50,100 ----- 100,100
     */
   private val paperLayer = PaperLayer(
-    Seq(
+    List(
       Point(0, 0) -- Point(50, 0),
       Point(50, 0) -- Point(100, 0),
       Point(100, 0) -- Point(100, 50),
@@ -43,7 +43,7 @@ class PaperLayerSpec extends CommonFlatSpec {
     // then
 
     withClue("Left was wrong: ")(
-      left should be(PaperLayer(Seq(
+      left should be(PaperLayer(List(
         Point(0, 0) -- Point(50, 0),
         Point(50, 100) -- Point(0, 100),
         Point(0, 100) -- Point(0, 50),
@@ -54,7 +54,7 @@ class PaperLayerSpec extends CommonFlatSpec {
       ))))
 
     withClue("Right was wrong: ")(
-      right should be(PaperLayer(Seq(
+      right should be(PaperLayer(List(
         Point(50, 0) -- Point(100, 0),
         Point(100, 0) -- Point(100, 50),
         Point(100, 50) -- Point(100, 100),
@@ -72,7 +72,7 @@ class PaperLayerSpec extends CommonFlatSpec {
     // then
 
     withClue("Top was wrong: ")(
-      top should be(PaperLayer(Seq(
+      top should be(PaperLayer(List(
         Point(0, 0) -- Point(50, 0),
         Point(50, 0) -- Point(100, 0),
         Point(100, 0) -- Point(100, 50),
@@ -83,7 +83,7 @@ class PaperLayerSpec extends CommonFlatSpec {
       ))))
 
     withClue("Bottom was wrong: ")(
-      bottom should be(PaperLayer(Seq(
+      bottom should be(PaperLayer(List(
         Point(100, 50) -- Point(100, 100),
         Point(100, 100) -- Point(50, 100),
         Point(50, 100) -- Point(0, 100),
@@ -100,7 +100,7 @@ class PaperLayerSpec extends CommonFlatSpec {
 
     withClue("Upper Left was wrong: ")(
       upperLeft should be(
-        PaperLayer(Seq(
+        PaperLayer(List(
           Point(0, 0) -- Point(50, 0),
           Point(50, 0) -- Point(100, 0),
           Point(0, 50) -- Point(0, 0),
@@ -112,7 +112,7 @@ class PaperLayerSpec extends CommonFlatSpec {
 
     withClue("Lower Right was wrong: ")(
       lowerRight should be(
-        PaperLayer(Seq(
+        PaperLayer(List(
           Point(100, 0) -- Point(100, 50),
           Point(100, 50) -- Point(100, 100),
           Point(100, 100) -- Point(50, 100),
@@ -126,7 +126,7 @@ class PaperLayerSpec extends CommonFlatSpec {
   "Rotating over a given axis" should "should yield expected results" in {
     // given
     val testLayer = PaperLayer(
-      Seq(
+      List(
         Point(0, 0) /\ Point(50, 50),
         Point(0, 50) /\ Point(25, 75)
       ))
@@ -137,7 +137,7 @@ class PaperLayerSpec extends CommonFlatSpec {
     // then
     rotated should be(
       PaperLayer(
-        Seq(
+        List(
           Point(100, 100) \/ Point(50, 50),
           Point(50, 100) \/ Point(25, 75)
         )))
@@ -162,7 +162,7 @@ class PaperLayerSpec extends CommonFlatSpec {
       * 0,100 --x--- 50,100       50,100 --x-- 100,100
       */
     val validLayerA = PaperLayer(
-      Seq(
+      List(
         Point(0, 0) -- Point(50, 0),
         Point(0, 100) -- Point(50, 100),
         Point(0, 0) -- Point(0, 50),
@@ -172,7 +172,7 @@ class PaperLayerSpec extends CommonFlatSpec {
       ))
 
     val validLayerB = PaperLayer(
-      Seq(
+      List(
         Point(50, 0) -- Point(100, 0),
         Point(50, 100) -- Point(100, 100),
         Point(50, 0) -- Point(50, 50),
@@ -187,7 +187,7 @@ class PaperLayerSpec extends CommonFlatSpec {
     // then
     merged shouldBe defined
     merged should contain(
-      PaperLayer(Seq(
+      PaperLayer(List(
         Point(0.0, 0.0) -- Point(50.0, 0.0),
         Point(0.0, 100.0) -- Point(50.0, 100.0),
         Point(0.0, 0.0) -- Point(0.0, 50.0),
@@ -220,7 +220,7 @@ class PaperLayerSpec extends CommonFlatSpec {
       * 0,100 --x--- 50,100
       */
     val validLayerA = PaperLayer(
-      Seq(
+      List(
         Point(0, 0) -- Point(50, 0),
         Point(0, 50) -- Point(50, 50),
         Point(0, 100) -- Point(50, 100),
@@ -231,7 +231,7 @@ class PaperLayerSpec extends CommonFlatSpec {
       ))
 
     val validLayerB = PaperLayer(
-      Seq(
+      List(
         Point(0, 25) -- Point(50, 25),
         Point(50, 25) -- Point(100, 25),
         Point(100, 25) -- Point(100, 50),
@@ -252,19 +252,21 @@ class PaperLayerSpec extends CommonFlatSpec {
   "Calculating the surface area of a layer" should "yield the correct answers" in {
     // given
     val square = PaperLayer(
-      Seq(Point(0, 0) -- Point(0, 10),
-          Point(0, 10) -- Point(10, 10),
-          Point(10, 10) -- Point(10, 0),
-          Point(10, 0) -- Point(0, 0))
+      List(Point(0, 0) -- Point(0, 10),
+           Point(0, 10) -- Point(10, 10),
+           Point(10, 10) -- Point(10, 0),
+           Point(10, 0) -- Point(0, 0))
     )
 
     val triangle = PaperLayer(
-      Seq(Point(0, 0) -- Point(0, 10), Point(0, 10) -- Point(10, 10), Point(10, 10) -- Point(0, 0))
+      List(Point(0, 0) -- Point(0, 10),
+           Point(0, 10) -- Point(10, 10),
+           Point(10, 10) -- Point(0, 0))
     )
 
     // when
-    val squareSurfaceArea   = square.surfaceArea()
-    val triangleSurfaceArea = triangle.surfaceArea()
+    val squareSurfaceArea   = square.surfaceArea
+    val triangleSurfaceArea = triangle.surfaceArea
 
     squareSurfaceArea should be(100)
     triangleSurfaceArea should be(50)
@@ -273,7 +275,7 @@ class PaperLayerSpec extends CommonFlatSpec {
   "Merging layers where the points align incorrectly" should "still refuse to merge the layers" in {
     // given
     val diamondA = PaperLayer(
-      Seq(
+      List(
         Point(0, 50) -- Point(50, 0),
         Point(50, 0) -- Point(100, 50),
         Point(100, 50) -- Point(50, 100),
@@ -282,7 +284,7 @@ class PaperLayerSpec extends CommonFlatSpec {
     )
 
     val diamondB = PaperLayer(
-      Seq(
+      List(
         Point(10, 60) -- Point(60, 10),
         Point(60, 10) -- Point(100, 50),
         Point(100, 50) -- Point(50, 100),
@@ -295,5 +297,42 @@ class PaperLayerSpec extends CommonFlatSpec {
 
     // then
     result should not be defined
+  }
+
+  "The paper layer" should "accurately report which folds are or aren't covered by it" in {
+    // given
+    val shape = PaperLayer(
+      List(
+        Point(0, 0) -- Point(50, 0),
+        Point(0, 50) -- Point(50, 50),
+        Point(0, 100) -- Point(50, 100),
+        Point(0, 0) -- Point(0, 50),
+        Point(0, 50) -- Point(0, 100),
+        Point(50, 0) -- Point(50, 50),
+        Point(50, 50) -- Point(50, 100)
+      ))
+
+    val invalidFold = Point(0, 25) -- Point(50, 25)
+    val validFold   = Point(100, 25) -- Point(100, 50)
+
+    // then
+    shape coversFold validFold should be(false)
+    shape coversFold invalidFold should be(true)
+  }
+
+  "The paper layer" should "accurately report which folds are or aren't covered by it (alt.)" in {
+    // given
+    val shape = PaperLayer from (
+      Point(50, 0) -- Point(100, 0),
+      Point(0, 50) -- Point(0, 100),
+      Point(25, 25) \/ Point(50, 50),
+      Point(0, 100) ~~ Point(50, 50),
+      Point(50, 50) ~~ Point(100, 0),
+      Point(0, 50) ~~ Point(25, 25),
+      Point(25, 25) ~~ Point(50, 0)
+    )
+
+    // then
+    shape coversFold Point(50, 50) /\ Point(0, 0) should be(true)
   }
 }

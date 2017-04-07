@@ -83,7 +83,7 @@ object Point {
         if (start.y == end.y) return Point(p.x, 2 * (p.y + start.y))
 
         lazy val m = end gradientTo start
-        lazy val c = start.y - (m * start.x)
+        lazy val c = start.y - m * start.x
         lazy val d = abs((p.x + (p.y - c) * m) / (1 + pow(m, 2)))
 
         Point(2 * d - p.x, 2 * d * m - p.y + 2 * c)

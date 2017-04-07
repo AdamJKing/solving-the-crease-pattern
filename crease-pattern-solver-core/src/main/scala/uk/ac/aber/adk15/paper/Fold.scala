@@ -26,7 +26,7 @@ case class Fold(start: Point, end: Point, foldType: FoldType) {
       if ((start == otherStart || start == otherEnd) && (end == otherStart || end == otherEnd))
         return foldType == otherFoldType
 
-      def onSameLine(a: Point, b: Point, c: Point) = abs(a gradientTo b) == abs(b gradientTo c)
+      def onSameLine(a: Point, b: Point, c: Point) = (a gradientTo b) == (b gradientTo c)
 
       foldType == otherFoldType && {
         if (start == otherStart || end == otherStart)
@@ -60,6 +60,16 @@ case class Fold(start: Point, end: Point, foldType: FoldType) {
     case PaperBoundary | CreasedFold => this
     case MountainFold | ValleyFold   => Fold(start, end, CreasedFold)
   }
+
+  def contains(point: Point): Boolean = toSet.contains(point)
+
+  def getOther(point: Point): Point = {
+    require(contains(point))
+    if (start == point) end
+    else start
+  }
+
+  def mapPoints(f: Point => Point) = Fold(f(start), f(end), foldType)
 }
 
 /**
@@ -72,7 +82,7 @@ case class Fold(start: Point, end: Point, foldType: FoldType) {
   * - Paper boundary: This is a physical feature of the paper, ie, the *actual* edge of the paper
   *
   */
-sealed trait FoldType
+sealed abstract class FoldType {}
 
 case object MountainFold extends FoldType {
   override def toString = "/\\"
