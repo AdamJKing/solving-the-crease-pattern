@@ -7,22 +7,24 @@ import com.typesafe.scalalogging.Logger
 import uk.ac.aber.adk15.controllers.ApplicationController
 import uk.ac.aber.adk15.model.Config
 import uk.ac.aber.adk15.model.Config.Constants.DefaultConfig
-import uk.ac.aber.adk15.view.{ApplicationView, ConfigurationView, ProgressPanel}
+import uk.ac.aber.adk15.paper.CreasePattern
+import uk.ac.aber.adk15.view.{ApplicationView, ConfigurationView, ProgressPane, ResultsView}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
+import scalafx.Includes._
 import scalafx.scene.control.Alert.AlertType
-import scalafx.scene.control.{Alert, Button, Label}
-import scalafx.scene.layout.AnchorPane
+import scalafx.scene.control.{Alert, Label}
+import scalafx.scene.layout.{HBox, Pane, Priority}
 import scalafx.stage.FileChooser
 import scalafxml.core.macros.sfxml
 
 @sfxml
-class ApplicationViewController(private val mainController: ApplicationController,
+class ApplicationViewController(private val container: HBox,
+                                private val mainController: ApplicationController,
                                 private val loadedCreasePatternLabel: Label,
-                                private val progressAnchor: AnchorPane,
-                                private val progressPanel: ProgressPanel,
-                                private val startButton: Button) {
+                                private val progressPane: ProgressPane,
+                                private val menu: Pane) {
 
   private val logger = Logger[ApplicationViewController]
 
@@ -33,14 +35,18 @@ class ApplicationViewController(private val mainController: ApplicationControlle
     implicit val executionContext =
       ExecutionContext.fromExecutor((command: Runnable) => Platform.runLater(command))
 
-    startButton.disable = true
-    progressAnchor.children = progressPanel
+    disableAllButtonsIn(menu)
+
+    HBox.setHgrow(progressPane, Priority.Always)
+    container.children add progressPane
 
     if (creasePatternFile.isDefined) {
       mainController.execute(creasePatternFile.get, currentConfig) onComplete {
-        case Success(Some(result)) => // show result view
-        case Success(None)         => showNoFoldOrderFoundMessage()
-        case Failure(ex)           => showExceptionMessage(ex)
+        case Success((Some(result), original: CreasePattern)) =>
+          new ResultsView(result, original).showAndWait()
+
+        case Success((None, _)) => showNoFoldOrderFoundMessage()
+        case Failure(ex)        => showExceptionMessage(ex)
       }
     } else {
       logger info "No crease pattern was loaded."
@@ -57,6 +63,8 @@ class ApplicationViewController(private val mainController: ApplicationControlle
     creasePatternFile = Option(fileChooser.showOpenDialog(ApplicationView))
     loadedCreasePatternLabel.text = creasePatternFile map (_.getName) getOrElse "Error Loading crease file"
   }
+
+  private def disableAllButtonsIn(pane: Pane) = pane.children foreach (_.disable = true)
 
   private def showExceptionMessage(ex: Throwable): Unit = {
     new Alert(AlertType.Error) {

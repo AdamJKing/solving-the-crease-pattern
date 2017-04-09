@@ -1,4 +1,6 @@
-package uk.ac.aber.adk15.executors.ant
+package uk.ac.aber.adk15.view
+
+import java.util.concurrent.atomic.AtomicReference
 
 trait ObservableEvent
 trait Observer[T <: ObservableEvent] {
@@ -7,8 +9,11 @@ trait Observer[T <: ObservableEvent] {
   def onUpdate(event: T): Unit
 }
 
-class UserObservable[T <: ObservableEvent] {
-  def subscribe(observer: Observer[T], eventType: Class[T]): Unit = {
+final class EventBus[T <: ObservableEvent] {
+
+  private val eventObservers = new AtomicReference(Set[Observer[T]]())
+
+  def subscribe(observer: Observer[T]): Unit = {
     var newObservers = eventObservers.get + observer
     var wasSet       = eventObservers.compareAndSet(eventObservers.get(), newObservers)
 
@@ -18,7 +23,7 @@ class UserObservable[T <: ObservableEvent] {
     }
   }
 
-  def unsubscribe(observer: Observer[T], event: Class[T]): Unit = {
+  def unsubscribe(observer: Observer[T]): Unit = {
     var newObservers = eventObservers.get - observer
     var wasSet       = eventObservers.compareAndSet(eventObservers.get(), newObservers)
 

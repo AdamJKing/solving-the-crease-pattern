@@ -12,7 +12,7 @@ import scala.math.{max, min, signum}
   *
   * @param folds the folds contained within this layer
   */
-case class PaperLayer(private val folds: List[Fold]) {
+case class PaperLayer(folds: List[Fold]) {
 
   private val logger = Logger(s"PaperLayer${this.hashCode()}")
 
@@ -95,7 +95,7 @@ case class PaperLayer(private val folds: List[Fold]) {
     * @return the calculated surface area
     */
   def surfaceArea: Double = {
-    val points = (creasedFolds ++ paperBoundaries()) flatMap (_.toSet)
+    val points = (creasedFolds ++ paperBoundaries) flatMap (_.toSet)
 
     (points.distinct sliding 3 foldLeft 0.0) { (totalArea, group) =>
       group match {
@@ -149,7 +149,7 @@ case class PaperLayer(private val folds: List[Fold]) {
   def mountainFolds: List[Fold]     = folds filter (_.foldType == MountainFold)
   def valleyFolds: List[Fold]       = folds filter (_.foldType == ValleyFold)
   def creasedFolds: List[Fold]      = folds filter (_.foldType == CreasedFold)
-  def paperBoundaries(): List[Fold] = folds filter (_.foldType == PaperBoundary)
+  def paperBoundaries: List[Fold] = folds filter (_.foldType == PaperBoundary)
 
   def contains(fold: Fold): Boolean            = folds contains fold
   def exists(test: (Fold) => Boolean): Boolean = folds exists test

@@ -12,5 +12,5 @@ case class FoldNode(model: CreasePattern, fold: Option[Fold])(
       FoldNode(model <~~ childFold, Some(childFold)))
   }
 
-  def allFoldsAreComplete(): Boolean = model.folds.isEmpty
+  def allFoldsAreComplete(): Boolean = model.remainingFolds.isEmpty
 }

@@ -5,15 +5,16 @@ import java.util.concurrent.atomic.AtomicBoolean
 import com.google.inject.Inject
 import com.typesafe.scalalogging.Logger
 import uk.ac.aber.adk15.paper.{CreasePattern, Fold}
+import uk.ac.aber.adk15.view.{EventBus, ObservableEvent}
 
 import scala.annotation.tailrec
 import scala.collection.concurrent.TrieMap
-import scala.collection.mutable
 
-trait AntTraverser extends UserObservable[AntTraversalEvent] {
+trait AntTraverser {
   def traverseTree(root: FoldNode): Option[List[Fold]]
 
   protected def traverse(currentNode: FoldNode, visitedNodes: List[FoldNode]): Option[List[Fold]]
+
   protected def selectChild(children: Set[FoldNode]): FoldNode
 }
 
@@ -21,13 +22,14 @@ case class AntTraversalEvent(model: CreasePattern) extends ObservableEvent {
   val id: Long = Thread.currentThread().getId
 }
 
-class AntTraverserImpl @Inject()(diceRollService: DiceRollService) extends AntTraverser {
+class AntTraverserImpl @Inject()(diceRollService: DiceRollService,
+                                 eventBus: EventBus[AntTraversalEvent])
+    extends AntTraverser {
 
   private val logger = Logger[AntTraverser]
 
-  private val nodeWeights
-    : mutable.Map[FoldNode, Int]           = TrieMap[FoldNode, Int]() withDefaultValue 100
-  private val solutionFound: AtomicBoolean = new AtomicBoolean(false)
+  private val nodeWeights   = TrieMap[FoldNode, Int]() withDefaultValue 100
+  private val solutionFound = new AtomicBoolean(false)
 
   override def traverseTree(root: FoldNode): Option[List[Fold]] = {
     if (solutionFound.get) None
@@ -54,17 +56,17 @@ class AntTraverserImpl @Inject()(diceRollService: DiceRollService) extends AntTr
 
     if (isEndState) {
       if (currentNode.allFoldsAreComplete()) {
-        onSuccess(AntTraversalEvent(currentNode.model))
+        eventBus.onSuccess(AntTraversalEvent(currentNode.model))
         Some(visitedNodes :+ currentNode withFilter (_.fold.isDefined) map (_.fold.get))
       } else {
         logger info "Unsuccessful... updating weights!"
-        onFailure(AntTraversalEvent(currentNode.model))
+        eventBus.onFailure(AntTraversalEvent(currentNode.model))
         nodeWeights(currentNode) = 0
         updateWeights(visitedNodes)
         None
       }
     } else {
-      onUpdate(AntTraversalEvent(currentNode.model))
+      eventBus.onUpdate(AntTraversalEvent(currentNode.model))
       traverse(selectChild(currentNode.children), visitedNodes :+ currentNode)
     }
   }
