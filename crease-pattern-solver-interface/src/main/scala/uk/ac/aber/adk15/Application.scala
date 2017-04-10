@@ -26,7 +26,7 @@ object Application extends JFXApp {
         new Scene(FXMLView(res, dependencyResolver))
 
       case Failure(e) =>
-        throw new IOException(s"ERROR: Could not load configuration_panel.fxml", e)
+        throw new IOException(s"ERROR: Could not load $filename", e)
     }
   }
 }

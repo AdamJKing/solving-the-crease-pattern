@@ -10,7 +10,7 @@ case class CreasePattern(layers: List[PaperLayer]) {
 
   private val logger = Logger[CreasePattern]
 
-  def folds: Set[Fold] =
+  def remainingFolds: Set[Fold] =
     layers.flatMap(layer => layer.mountainFolds ++ layer.valleyFolds)(collection.breakOut)
 
   def fold(edge: Fold): CreasePattern = {
@@ -45,8 +45,8 @@ case class CreasePattern(layers: List[PaperLayer]) {
   }
 
   private def validateLegalFold(fold: Fold) =
-    if (!(folds contains fold)) {
-      logger error s"Could not fold $fold, folds available were $folds"
+    if (!(remainingFolds contains fold)) {
+      logger error s"Could not fold $fold, folds available were $remainingFolds"
       throw new IllegalFoldException(fold)
     }
 

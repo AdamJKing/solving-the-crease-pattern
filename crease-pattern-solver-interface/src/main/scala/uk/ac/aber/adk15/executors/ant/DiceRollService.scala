@@ -1,6 +1,6 @@
 package uk.ac.aber.adk15.executors.ant
 
-import scala.util.Random
+import scala.util.{Random, Try}
 
 trait DiceRollService {
   def randomDiceRoll(floor: Double, ceil: Double): Double
@@ -15,7 +15,7 @@ class DiceRollServiceImpl extends DiceRollService {
   override def randomWeightedDiceRoll(weights: List[Int]): Int = {
     if (weights.size == 1 || weights.isEmpty) return 0
 
-    lazy val probabilities = weights map (_ / weights.sum)
+    lazy val probabilities = weights map (w => Try(w / weights.sum) getOrElse 0)
 
     var cumulativeProp = 0.0
     val diceRoll       = Random.nextDouble()
