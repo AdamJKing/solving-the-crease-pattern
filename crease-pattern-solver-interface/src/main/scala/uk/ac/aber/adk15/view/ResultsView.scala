@@ -14,11 +14,11 @@ class ResultsView(foldOrder: Seq[Fold], originalPattern: CreasePattern) extends 
 
   private val CanvasSize = 200.0
 
-  width = CanvasSize
-  height = CanvasSize
-
   scene = new Scene {
     content = new ScrollPane() {
+      prefWidth = CanvasSize + 20
+      prefHeight = CanvasSize + 20
+
       content = {
         val children = foldOrder.inits map (folds => (originalPattern /: folds)(_ <~~ _))
 
