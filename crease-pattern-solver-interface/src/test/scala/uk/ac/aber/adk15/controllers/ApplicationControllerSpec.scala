@@ -29,15 +29,17 @@ class ApplicationControllerSpec extends CommonFlatSpec {
     given(config.maxThreads) willReturn 8
   }
 
-  it should "should use the values from the configuration" in {
+  "When executing the controller" should "use the values from the configuration" in {
     // given
+    val creasePatternFile = mock[File]
     given(
       antBasedFoldExecutor
         .findFoldOrder(any[CreasePattern], anyInt)(any[ExecutionContext]))
       .willReturn(mock[Future[Option[List[Fold]]]])
+    given(creasePatternParser parseFile creasePatternFile) willReturn mock[CreasePattern]
 
     // when
-    applicationController.execute(mock[File], config)
+    applicationController.execute(creasePatternFile, config)
 
     // then
     verify(config, times(2)).maxThreads

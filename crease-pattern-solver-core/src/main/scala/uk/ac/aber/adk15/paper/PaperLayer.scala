@@ -22,14 +22,15 @@ case class PaperLayer(folds: List[Fold]) {
     * When we separate the layers we also crease the line on which the
     * layer was cut. You can think of this as "ripping" the layer.
     *
-    * @param start the first point on the line
-    * @param end the second point on the line
+    * @param fold the edge to use as the basis for the cut
     * @return the two new layers, as though the original were cut in two
     */
-  def segmentOnLine(start: Point, end: Point): (PaperLayer, PaperLayer) = {
-    @inline def isOnLeft(e: Fold)   = (e.toSet map (_ compareTo (start, end))).sum < 0
-    @inline def isOnRight(e: Fold)  = (e.toSet map (_ compareTo (start, end))).sum > 0
-    @inline def isOnCentre(e: Fold) = (e.toSet map (_ compareTo (start, end))).sum == 0
+  def segmentOnFold(fold: Fold): (PaperLayer, PaperLayer) = {
+    val (start, end) = (fold.start, fold.end)
+
+    def isOnLeft(e: Fold)   = (e.toSet map (_ compareTo (start, end))).sum < 0
+    def isOnRight(e: Fold)  = (e.toSet map (_ compareTo (start, end))).sum > 0
+    def isOnCentre(e: Fold) = (e.toSet map (_ compareTo (start, end))).sum == 0
 
     val centreLines = (folds filter isOnCentre) map (_.crease)
     val leftLines   = (folds filter isOnLeft) ++ centreLines
@@ -97,7 +98,7 @@ case class PaperLayer(folds: List[Fold]) {
   def surfaceArea: Double = {
     val points = (creasedFolds ++ paperBoundaries) flatMap (_.toSet)
 
-    (points.distinct sliding 3 foldLeft 0.0) { (totalArea, group) =>
+    (points sliding 3 foldLeft 0.0) { (totalArea, group) =>
       group match {
         case List(a: Point, b: Point, c: Point) =>
           // http://www.mathopenref.com/coordtrianglearea.html
@@ -146,10 +147,10 @@ case class PaperLayer(folds: List[Fold]) {
     })
   }
 
-  def mountainFolds: List[Fold]     = folds filter (_.foldType == MountainFold)
-  def valleyFolds: List[Fold]       = folds filter (_.foldType == ValleyFold)
-  def creasedFolds: List[Fold]      = folds filter (_.foldType == CreasedFold)
-  def paperBoundaries: List[Fold] = folds filter (_.foldType == PaperBoundary)
+  def mountainFolds: Set[Fold]   = (folds filter (_.foldType == MountainFold)).toSet
+  def valleyFolds: Set[Fold]     = (folds filter (_.foldType == ValleyFold)).toSet
+  def creasedFolds: Set[Fold]    = (folds filter (_.foldType == CreasedFold)).toSet
+  def paperBoundaries: Set[Fold] = (folds filter (_.foldType == PaperBoundary)).toSet
 
   def contains(fold: Fold): Boolean            = folds contains fold
   def exists(test: (Fold) => Boolean): Boolean = folds exists test

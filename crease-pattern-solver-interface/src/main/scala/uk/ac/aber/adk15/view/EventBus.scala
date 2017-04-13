@@ -9,7 +9,7 @@ trait Observer[T <: ObservableEvent] {
   def onUpdate(event: T): Unit
 }
 
-final class EventBus[T <: ObservableEvent] {
+class EventBus[T <: ObservableEvent] {
 
   private val eventObservers = new AtomicReference(Set[Observer[T]]())
 

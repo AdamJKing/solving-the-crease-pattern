@@ -22,10 +22,10 @@ class FoldSelectionServiceImpl extends FoldSelectionService {
     val mountainFolds =
       searchForNonBlockedFolds(_.mountainFolds, model.layers.reverse)
 
-    (legalValleyFolds ++ mountainFolds)(collection.breakOut)
+    legalValleyFolds ++ mountainFolds
   }
 
-  private def correspondingCreasedFold(fold: Fold, creasedFolds: List[Fold]): Boolean = {
+  private def correspondingCreasedFold(fold: Fold, creasedFolds: Set[Fold]): Boolean = {
     val (x1, y1) = (fold.start.x, fold.start.y)
     val (x2, y2) = (fold.end.x, fold.end.y)
 
@@ -50,8 +50,8 @@ class FoldSelectionServiceImpl extends FoldSelectionService {
 
         // if the intersection is within our range
 
-        val sortedValuesX = ((creasedFolds flatMap (_.toSet)) map (_.x)).sorted
-        val sortedValuesY = ((creasedFolds flatMap (_.toSet)) map (_.y)).sorted
+        val sortedValuesX = ((creasedFolds flatMap (_.toSet)) map (_.x)).toList.sorted
+        val sortedValuesY = ((creasedFolds flatMap (_.toSet)) map (_.y)).toList.sorted
 
         val (xMax, xMin) = (sortedValuesX.last - 1, sortedValuesX.head + 1)
         val (yMax, yMin) = (sortedValuesY.last - 1, sortedValuesY.head + 1)
@@ -76,8 +76,8 @@ class FoldSelectionServiceImpl extends FoldSelectionService {
     }
   }
 
-  private def searchForNonBlockedFolds(foldsFrom: PaperLayer => List[Fold],
-                                       layers: List[PaperLayer]): List[Fold] = {
+  private def searchForNonBlockedFolds(foldsFrom: PaperLayer => Set[Fold],
+                                       layers: List[PaperLayer]): Set[Fold] = {
     layers match {
       case first :: Nil => foldsFrom(first)
       case first :: rest =>
@@ -97,7 +97,7 @@ class FoldSelectionServiceImpl extends FoldSelectionService {
 
           firstFolds ++ (foldsFromLayersBeneath filterNot (first coversFold _))
         } else firstFolds
-      case Nil => List()
+      case Nil => Set()
     }
   }
 }

@@ -38,7 +38,7 @@ class PaperLayerSpec extends CommonFlatSpec {
 
   it should "allow for layers to be split over a vertical line" in {
     // when
-    val (left, right) = paperLayer segmentOnLine (Point(50, 0), Point(50, 100))
+    val (left, right) = paperLayer segmentOnFold Fold(Point(50, 0), Point(50, 100), MountainFold)
 
     // then
 
@@ -67,7 +67,7 @@ class PaperLayerSpec extends CommonFlatSpec {
 
   it should "allow for layers to be split over a horizontal line" in {
     // when
-    val (bottom, top) = paperLayer segmentOnLine (Point(0, 50), Point(100, 50))
+    val (bottom, top) = paperLayer segmentOnFold Fold(Point(0, 50), Point(100, 50), MountainFold)
 
     // then
 
@@ -96,7 +96,7 @@ class PaperLayerSpec extends CommonFlatSpec {
 
   it should "allow for layers to be split over an arbitrary line" in {
     // when
-    val (lowerRight, upperLeft) = paperLayer segmentOnLine (Point(0, 100), Point(100, 0))
+    val (lowerRight, upperLeft) = paperLayer segmentOnFold Fold(Point(0, 100), Point(100, 0), MountainFold)
 
     withClue("Upper Left was wrong: ")(
       upperLeft should be(
