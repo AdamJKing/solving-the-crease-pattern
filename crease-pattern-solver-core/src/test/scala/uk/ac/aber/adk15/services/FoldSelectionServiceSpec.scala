@@ -71,7 +71,7 @@ class FoldSelectionServiceSpec extends CommonFlatSpec {
     // given
     val folded = MultiLayeredUnfoldedPaper <~~
       Point(0, 100) \/ Point(50, 50) <~~
-      Point(0, 50) /\ Point(25, 25)
+      Point(50, 100) /\ Point(75, 75)
 
     // when
     val availableFolds = foldSelectionService.getAvailableOperations(folded)

@@ -38,9 +38,10 @@ final class Model(model: CreasePattern, xBounds: (Double, Double), yBounds: (Dou
       (xMin + (x / largest) * xMax, yMin + (y / largest) * xMax)
 
     model.layers foreach { layer =>
-      val foldsToShade = layer.creasedFolds ++ layer.paperBoundaries
+      val foldsToShade = (layer.creasedFolds ++ layer.paperBoundaries).toList
 
       val externalPoints = foldsToShade.flatMap(_.toSet).map(p => normalise(p.x, p.y)).distinct
+
       gc.fillPolygon(externalPoints.sortBy(Function.tupled((a, b) => a + b)))
 
       layer.folds.reverse foreach (fold => {

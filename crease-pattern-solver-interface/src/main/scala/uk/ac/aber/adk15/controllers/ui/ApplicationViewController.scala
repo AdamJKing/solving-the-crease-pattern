@@ -47,8 +47,6 @@ class ApplicationViewController(private val mainController: ApplicationControlle
                                 private val loadedCreasePatternLabel: Label,
                                 private val progressPane: ProgressPane,
                                 private val menu: Pane) {
-  import ApplicationViewController._
-
   private val logger = Logger[ApplicationViewController]
 
   private var creasePatternFile: Option[File] = None
@@ -79,7 +77,7 @@ class ApplicationViewController(private val mainController: ApplicationControlle
             showExceptionMessage(ex)
 
           case Success(result) =>
-            logger info "result=$result"
+            logger info s"result=$result"
             handleOutcome(result)
         }
       case None =>
@@ -103,7 +101,7 @@ class ApplicationViewController(private val mainController: ApplicationControlle
   def loadCreasePattern(): Unit = {
     val fileChooser = new FileChooser
     val file        = fileChooser showOpenDialog (ownerWindow = ApplicationView)
-    val fileLabel = creasePatternFile map (_.getName)
+    val fileLabel   = creasePatternFile map (_.getName)
 
     creasePatternFile = Option(file)
     loadedCreasePatternLabel.text = fileLabel getOrElse "Error Loading crease file"
@@ -115,15 +113,13 @@ class ApplicationViewController(private val mainController: ApplicationControlle
     *
     * @param outcome the result returned from the execution function.
     */
-  private def handleOutcome(outcome: ExecutionResult): Unit = {
+  private def handleOutcome(outcome: ExecutionResult): Unit = outcome match {
     case SuccessfulExecution(result, creasePattern) =>
       new ResultsView(result, creasePattern).showAndWait()
 
     case FailedExecution() => showNoFoldOrderFoundMessage()
   }
-}
 
-object ApplicationViewController {
   /**
     * Disables all the elements in the given pane.
     *

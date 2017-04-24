@@ -42,7 +42,7 @@ class AntBasedFoldExecutorSpec extends CommonAsyncSpec {
     }
   }
 
-  it should "execute the traverser in as many threads as is allowed" in {
+  "executing the traverser" should "only start as many threads as is allowed" in {
     // given
     val numThreads = 8
     given(config.maxThreads) willReturn 8
@@ -51,7 +51,7 @@ class AntBasedFoldExecutorSpec extends CommonAsyncSpec {
     // when
     (antBasedFoldExecutor findFoldOrder (FlatCreasePattern, 8)) map { _ =>
       //then
-      verify(antTraverser traverseTree any[FoldNode], times(numThreads))
+      verify(antTraverser, times(numThreads)) traverseTree any[FoldNode]
       succeed
     }
   }

@@ -19,10 +19,10 @@ class FoldSelectionServiceImpl extends FoldSelectionService {
       searchForNonBlockedFolds(_.valleyFolds, model.layers)
 
     // let's look for mountain folds
-    val mountainFolds =
+    val legalMountainFolds =
       searchForNonBlockedFolds(_.mountainFolds, model.layers.reverse)
 
-    legalValleyFolds ++ mountainFolds
+    legalValleyFolds ++ legalMountainFolds
   }
 
   private def correspondingCreasedFold(fold: Fold, creasedFolds: Set[Fold]): Boolean = {
@@ -36,7 +36,9 @@ class FoldSelectionServiceImpl extends FoldSelectionService {
       val (x4, y4) = (line.end.x, line.end.y)
 
       // if the lines are the same
-      if (line == fold) true
+      def anySharedPoints = line.toSet exists (fold.toSet contains _)
+
+      if (line == fold || anySharedPoints) true
       else {
         val a = (x1 - x2) * (y3 - y4)
         val b = (y1 - y2) * (x3 - x4)
@@ -49,16 +51,13 @@ class FoldSelectionServiceImpl extends FoldSelectionService {
         val py = (((x1 * y2 - y1 * x2) * (y3 - y4)) - (y1 - y2) * (x3 * y4 - y3 * x4)) / (((x1 - x2) * (x3 - y4)) - (y1 - y2) * (x3 - x4))
 
         // if the intersection is within our range
+        val xValues = for (fold <- creasedFolds; points <- fold.toSet) yield points.x
+        val yValues = for (fold <- creasedFolds; points <- fold.toSet) yield points.y
 
-        val sortedValuesX = ((creasedFolds flatMap (_.toSet)) map (_.x)).toList.sorted
-        val sortedValuesY = ((creasedFolds flatMap (_.toSet)) map (_.y)).toList.sorted
+        val (xMin, xMax) = (xValues.min, xValues.max)
+        val (yMin, yMax) = (yValues.min, yValues.max)
 
-        val (xMax, xMin) = (sortedValuesX.last - 1, sortedValuesX.head + 1)
-        val (yMax, yMin) = (sortedValuesY.last - 1, sortedValuesY.head + 1)
-
-        if (px <= xMax && px >= xMin && py <= yMax && py >= yMin) return true
-
-        false
+        px <= xMax && px >= xMin && py <= yMax && py >= yMin
       }
     })
   }

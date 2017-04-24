@@ -96,7 +96,9 @@ class PaperLayerSpec extends CommonFlatSpec {
 
   it should "allow for layers to be split over an arbitrary line" in {
     // when
-    val (lowerRight, upperLeft) = paperLayer segmentOnFold Fold(Point(0, 100), Point(100, 0), MountainFold)
+    val (lowerRight, upperLeft) = paperLayer segmentOnFold Fold(Point(0, 100),
+                                                                Point(100, 0),
+                                                                MountainFold)
 
     withClue("Upper Left was wrong: ")(
       upperLeft should be(
@@ -251,25 +253,35 @@ class PaperLayerSpec extends CommonFlatSpec {
 
   "Calculating the surface area of a layer" should "yield the correct answers" in {
     // given
-    val square = PaperLayer(
-      List(Point(0, 0) -- Point(0, 10),
-           Point(0, 10) -- Point(10, 10),
-           Point(10, 10) -- Point(10, 0),
-           Point(10, 0) -- Point(0, 0))
+    val square = PaperLayer from (
+      Point(0, 0) -- Point(0, 10),
+      Point(0, 10) -- Point(10, 10),
+      Point(10, 10) -- Point(10, 0),
+      Point(10, 0) -- Point(0, 0)
     )
 
-    val triangle = PaperLayer(
-      List(Point(0, 0) -- Point(0, 10),
-           Point(0, 10) -- Point(10, 10),
-           Point(10, 10) -- Point(0, 0))
+    val triangle = PaperLayer from (
+      Point(0, 0) -- Point(0, 10),
+      Point(0, 10) -- Point(10, 10),
+      Point(10, 10) -- Point(0, 0)
+    )
+
+    val complexShape = PaperLayer from (
+      Point(0, 0) -- Point(-5, 10),
+      Point(-5, 10) -- Point(15, 10),
+      Point(15, 10) -- Point(10, 0),
+      Point(10, 0) -- Point(0, 0)
     )
 
     // when
     val squareSurfaceArea   = square.surfaceArea
     val triangleSurfaceArea = triangle.surfaceArea
+    val complexSurfaceArea  = complexShape.surfaceArea
 
+    // then
     squareSurfaceArea should be(100)
     triangleSurfaceArea should be(50)
+    complexSurfaceArea should be(150)
   }
 
   "Merging layers where the points align incorrectly" should "still refuse to merge the layers" in {
@@ -301,23 +313,25 @@ class PaperLayerSpec extends CommonFlatSpec {
 
   "The paper layer" should "accurately report which folds are or aren't covered by it" in {
     // given
-    val shape = PaperLayer(
-      List(
-        Point(0, 0) -- Point(50, 0),
-        Point(0, 50) -- Point(50, 50),
-        Point(0, 100) -- Point(50, 100),
-        Point(0, 0) -- Point(0, 50),
-        Point(0, 50) -- Point(0, 100),
-        Point(50, 0) -- Point(50, 50),
-        Point(50, 50) -- Point(50, 100)
-      ))
+    val shape = PaperLayer from (
+      Point(0, 0) -- Point(0, 100),
+      Point(0, 100) -- Point(100, 100),
+      Point(100, 100) -- Point(100, 0),
+      Point(100, 0) -- Point(0, 0),
+      Point(0, 0) /\ Point(50, 50),
+      Point(50, 50) \/ Point(100, 100),
+      Point(0, 100) /\ Point(50, 50),
+      Point(50, 50) \/ Point(100, 0)
+    )
 
-    val invalidFold = Point(0, 25) -- Point(50, 25)
-    val validFold   = Point(100, 25) -- Point(100, 50)
+    val invalidFold      = Point(0, 50) -- Point(50, 0)
+    val validFold        = Point(100, 100) ~~ Point(200, 200)
+    val otherInvalidFold = Point(10, 0) -- Point(90, 100)
 
     // then
     shape coversFold validFold should be(false)
     shape coversFold invalidFold should be(true)
+    shape coversFold otherInvalidFold should be(true)
   }
 
   "The paper layer" should "accurately report which folds are or aren't covered by it (alt.)" in {

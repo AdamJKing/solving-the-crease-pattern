@@ -5,7 +5,7 @@ import uk.ac.aber.adk15.paper.Point.Helpers._
 
 import scala.Function.tupled
 import scala.annotation.tailrec
-import scala.math.{max, min, signum}
+import scala.math.{max, min}
 
 /**
   * A singular layer that may contain multiple Folds.
@@ -90,29 +90,11 @@ case class PaperLayer(folds: List[Fold]) {
     } else None
   }
 
-  /**
-    * Returns the total surface area covered by this layer.
-    *
-    * @return the calculated surface area
-    */
-  def surfaceArea: Double = {
-    val points = (creasedFolds ++ paperBoundaries) flatMap (_.toSet)
-
-    (points sliding 3 foldLeft 0.0) { (totalArea, group) =>
-      group match {
-        case List(a: Point, b: Point, c: Point) =>
-          // http://www.mathopenref.com/coordtrianglearea.html
-          math.abs((a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2) + totalArea
-
-        case _ => totalArea
-      }
-    }
-  }
-
   def coversFold(foldToTest: Fold, failsOnEdge: Boolean = true): Boolean = {
+    // http://geomalgorithms.com/a03-_inclusion.html
     @tailrec
     def findWindingNumber(p: Point, polygon: List[Point], startWn: Int = 0): Int = {
-      polygon.toList match {
+      polygon match {
         case a :: b :: rest =>
           if (a.y <= p.y && b.y > p.y && (p compareTo (a, b)) > 0)
             findWindingNumber(p, b :: rest, startWn + 1)
@@ -135,16 +117,39 @@ case class PaperLayer(folds: List[Fold]) {
       (p.x <= xMax && p.x >= xMin) && (p.y <= yMax && p.y >= yMin)
     }
 
-    val layerPoints = for (fold <- folds) yield (fold.start, fold.end)
+    val layerPoints = for (fold <- (creasedFolds ++ paperBoundaries).toList)
+      yield (fold.start, fold.end)
 
-    val edgeCheckedFold = accountForEdges(foldToTest, layerPoints)
+    if (((creasedFolds ++ paperBoundaries) contains foldToTest) || (isOnEdge(
+          foldToTest.start,
+          layerPoints) ^ isOnEdge(foldToTest.end, layerPoints))) {
+      val edgeCheckedFold = accountForEdges(foldToTest, layerPoints)
 
-    edgeCheckedFold.toSet exists (pointOnFold => {
-      if (isInBoundingBox(pointOnFold, layerPoints)) {
-        val polygon = layerPoints flatMap tupled(List(_, _))
-        findWindingNumber(pointOnFold, polygon :+ polygon.head) != 0
-      } else false
-    })
+      edgeCheckedFold.toSet exists (pointOnFold => {
+        if (isInBoundingBox(pointOnFold, layerPoints)) {
+          val polygon = layerPoints map (_._1)
+          findWindingNumber(pointOnFold, polygon :+ polygon.head) != 0
+        } else false
+      })
+    } else {
+      isOnEdge(foldToTest.start, layerPoints) && isOnEdge(foldToTest.end, layerPoints) && failsOnEdge
+    }
+  }
+
+  def surfaceArea: Double = {
+    val points = ((creasedFolds ++ paperBoundaries) map (_.start)).toList
+
+    // define a way of ordering points that works for our calculation
+    implicit val pointOrder = Ordering by ((p: Point) => p.x + p.y)
+
+    // run a sliding window over the list of points
+    // we take three points at a time, calculating the area of that triangle
+    // and summing them to find the total area
+    (0.0 /: (points.sorted sliding 3))((totalArea, triangle) =>
+      totalArea + (triangle match {
+        case x :: y :: z :: _ => calculateAreaOfTriangle(x, y, z)
+        case _                => 0.0
+      }))
   }
 
   def mountainFolds: Set[Fold]   = (folds filter (_.foldType == MountainFold)).toSet
@@ -169,7 +174,11 @@ case class PaperLayer(folds: List[Fold]) {
       val isInRangeX        = (p.x >= min(a.x, b.x)) && (p.x <= max(a.x, b.x))
       val isInRangeY        = (p.y >= min(a.y, b.y)) && (p.y <= max(a.y, b.y))
       val equalsEitherPoint = p == a || p == b
-      val isOnSameLine      = (p gradientTo a) == (p gradientTo b)
+      val isOnSameLine = {
+        (p.x == a.x && p.x == b.x && a.x == b.x) ||
+        (p.y == a.y && p.y == b.y && a.y == b.y) ||
+        (p gradientTo a) == (p gradientTo b)
+      }
 
       (isInRangeX && isInRangeY) && {
         if (equalsEitherPoint) true
@@ -185,20 +194,29 @@ case class PaperLayer(folds: List[Fold]) {
 
     val centreOfMass = Point(average(_.x), average(_.y))
 
-    def movePointTowardsCentreOfMass(point: Point) = {
-      val diff = centreOfMass - point
-      Point(point.x - signum(diff.x), point.y - signum(diff.y))
+    def movePointAwayFromCentreOfMass(point: Point) = {
+      val alteredX = point.x - math.signum(centreOfMass.x - point.x)
+      val alteredY = point.y - math.signum(centreOfMass.y - point.y)
+
+      Point(alteredX, alteredY)
     }
 
     foldToTest mapPoints { point =>
       if (isOnEdge(point, layerPoints))
-        movePointTowardsCentreOfMass(point)
+        movePointAwayFromCentreOfMass(point)
       else
         point
     }
   }
+
+  private def calculateAreaOfTriangle(x: Point, y: Point, z: Point) = {
+    // http://www.mathopenref.com/coordtrianglearea.html
+    def f(a: Point, b: Point, c: Point) = a.x * (b.y - c.y)
+    math.abs(f(x, y, z) + f(y, z, x) + f(z, x, y)) / 2
+  }
+
 }
 
 object PaperLayer {
-  def from(folds: Fold*) = PaperLayer(folds.toList)
+  def from(fold: Fold, folds: Fold*) = PaperLayer(fold +: folds.toList)
 }

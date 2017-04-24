@@ -18,17 +18,16 @@ class AntBasedFoldExecutorImpl @Inject()(antTraverser: AntTraverser,
 
   private val logger = Logger[AntBasedFoldExecutorImpl]
 
-  override def findFoldOrder(creasePattern: CreasePattern, maxAnts: Int)(
-      implicit executionContext: ExecutionContext): FoldOrder = {
+  type PossibleFoldOrder = Future[Option[List[Fold]]]
 
-    val operationTreeRoot = FoldNode(creasePattern, None)(implicitly(foldSelectionService))
+  override def findFoldOrder(creasePattern: CreasePattern, maxAnts: Int)(
+      implicit executionContext: ExecutionContext): PossibleFoldOrder = {
+
+    val operationTreeRoot = FoldNode(creasePattern, None)(foldSelectionService)
 
     logger info s"Starting ant colony with $maxAnts ants."
     Future.firstCompletedOf {
       List.range(0, maxAnts) map (_ => Future(antTraverser traverseTree operationTreeRoot))
-
-    } map (FoldOrder(_)) getOrElse Future.successful(None)
+    }
   }
-
-  case class FoldOrder(foldOrder: List[Fold])
 }
