@@ -6,7 +6,7 @@ import uk.ac.aber.adk15.view.shapes.Model
 
 import scalafx.scene.Scene
 import scalafx.scene.canvas.Canvas
-import scalafx.scene.control.{ContentDisplay, ListCell, ListView, ScrollPane}
+import scalafx.scene.control.{ContentDisplay, ListCell, ListView}
 import scalafx.scene.layout.Pane
 import scalafx.stage.Stage
 
@@ -14,18 +14,15 @@ class ResultsView(foldOrder: Seq[Fold], originalPattern: CreasePattern) extends 
 
   private val CanvasSize = 200.0
 
+  resizable = false
+
   scene = new Scene {
-    content = new ScrollPane() {
-      prefWidth = CanvasSize + 20
-      prefHeight = CanvasSize + 20
+    content = {
+      val children = foldOrder.inits map (folds => (originalPattern /: folds)(_ <~~ _))
 
-      content = {
-        val children = foldOrder.inits map (folds => (originalPattern /: folds)(_ <~~ _))
-
-        new ListView[CreasePattern](children.toSeq.reverse) {
-          cellFactory = _ => new CanvasCell()
-          fixedCellSize = 200.0
-        }
+      new ListView[CreasePattern](children.toSeq.reverse) {
+        cellFactory = _ => new CanvasCell()
+        fixedCellSize = 200.0
       }
     }
   }

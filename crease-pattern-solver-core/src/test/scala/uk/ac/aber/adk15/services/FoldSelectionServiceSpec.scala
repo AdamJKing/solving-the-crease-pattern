@@ -62,6 +62,7 @@ class FoldSelectionServiceSpec extends CommonFlatSpec {
 
     // then
     availableFolds should not contain (Point(25, 25) \/ Point(50, 50))
+    availableFolds should not contain (Point(100, 100) /\ Point(75, 75))
     availableFolds should {
       contain(Point(0, 100) \/ Point(50, 50)) and contain(Point(50, 50) /\ Point(100, 0))
     }
