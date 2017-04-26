@@ -101,9 +101,10 @@ class ApplicationViewController(private val mainController: ApplicationControlle
   def loadCreasePattern(): Unit = {
     val fileChooser = new FileChooser
     val file        = fileChooser showOpenDialog (ownerWindow = ApplicationView)
-    val fileLabel   = creasePatternFile map (_.getName)
 
     creasePatternFile = Option(file)
+
+    val fileLabel = creasePatternFile map (_.getName)
     loadedCreasePatternLabel.text = fileLabel getOrElse "Error loading crease file"
   }
 
