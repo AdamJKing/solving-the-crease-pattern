@@ -104,7 +104,7 @@ class ApplicationViewController(private val mainController: ApplicationControlle
     val fileLabel   = creasePatternFile map (_.getName)
 
     creasePatternFile = Option(file)
-    loadedCreasePatternLabel.text = fileLabel getOrElse "Error Loading crease file"
+    loadedCreasePatternLabel.text = fileLabel getOrElse "Error loading crease file"
   }
 
   /**

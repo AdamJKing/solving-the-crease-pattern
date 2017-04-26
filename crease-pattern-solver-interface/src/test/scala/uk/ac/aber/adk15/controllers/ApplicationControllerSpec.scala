@@ -73,6 +73,10 @@ class ApplicationControllerSpec extends CommonFlatSpec {
   it should "use the crease pattern parsed from the crease pattern file" in {
     // given
     val creasePatternFile = mock[File]
+    given(
+      antBasedFoldExecutor
+        .findFoldOrder(any[CreasePattern], anyInt)(any[ExecutionContext]))
+      .willReturn(mock[Future[Option[List[Fold]]]])
 
     // when
     applicationController.execute(creasePatternFile, config)

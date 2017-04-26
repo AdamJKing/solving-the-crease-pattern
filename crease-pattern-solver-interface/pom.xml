@@ -33,7 +33,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>uk.ac.aber.adk15.view.ApplicationView</mainClass>
+                            <mainClass>uk.ac.aber.adk15.Application</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
