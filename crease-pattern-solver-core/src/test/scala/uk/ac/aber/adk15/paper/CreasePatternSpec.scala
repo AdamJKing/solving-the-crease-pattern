@@ -3,6 +3,7 @@ package uk.ac.aber.adk15.paper
 import org.mockito.BDDMockito._
 import org.mockito.Matchers._
 import uk.ac.aber.adk15.CommonFlatSpec
+import uk.ac.aber.adk15.geometry.Point
 import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
 
 class CreasePatternSpec extends CommonFlatSpec {

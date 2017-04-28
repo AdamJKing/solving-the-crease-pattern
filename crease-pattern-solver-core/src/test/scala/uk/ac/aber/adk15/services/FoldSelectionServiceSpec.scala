@@ -2,9 +2,9 @@ package uk.ac.aber.adk15.services
 
 import uk.ac.aber.adk15.CommonFlatSpec
 import uk.ac.aber.adk15.CommonTestConstants.ModelConstants._
+import uk.ac.aber.adk15.geometry.Point
 import uk.ac.aber.adk15.paper.CreasePatternPredef.Helpers._
 import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
-import uk.ac.aber.adk15.paper.Point
 
 class FoldSelectionServiceSpec extends CommonFlatSpec {
 

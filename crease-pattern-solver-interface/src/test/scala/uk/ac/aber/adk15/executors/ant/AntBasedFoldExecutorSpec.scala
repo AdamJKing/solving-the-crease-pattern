@@ -6,9 +6,10 @@ import org.mockito.Mock
 import org.mockito.Mockito._
 import uk.ac.aber.adk15.CommonAsyncSpec
 import uk.ac.aber.adk15.CommonTestConstants.FlatCreasePattern
+import uk.ac.aber.adk15.geometry.Point
 import uk.ac.aber.adk15.model.Config
 import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
-import uk.ac.aber.adk15.paper.{CreasePattern, Fold, Point}
+import uk.ac.aber.adk15.paper.{CreasePattern, Fold}
 import uk.ac.aber.adk15.services.FoldSelectionService
 
 class AntBasedFoldExecutorSpec extends CommonAsyncSpec {

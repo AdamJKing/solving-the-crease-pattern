@@ -3,8 +3,9 @@ package uk.ac.aber.adk15.executors.ant
 import org.mockito.BDDMockito._
 import org.scalatest.Inside
 import uk.ac.aber.adk15.CommonFlatSpec
+import uk.ac.aber.adk15.geometry.Point
+import uk.ac.aber.adk15.paper.CreasePattern
 import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
-import uk.ac.aber.adk15.paper.{CreasePattern, Point}
 import uk.ac.aber.adk15.services.FoldSelectionService
 
 class FoldNodeSpec extends CommonFlatSpec with Inside {

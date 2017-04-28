@@ -1,7 +1,8 @@
 package uk.ac.aber.adk15
 
+import uk.ac.aber.adk15.geometry.Point
 import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
-import uk.ac.aber.adk15.paper.{CreasePattern, PaperLayer, Point}
+import uk.ac.aber.adk15.paper.{CreasePattern, PaperLayer}
 
 object CommonTestConstants {
   val FlatCreasePattern: CreasePattern = CreasePattern from (

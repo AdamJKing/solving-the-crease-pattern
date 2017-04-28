@@ -66,6 +66,7 @@
                         <arg>-dependencyfile</arg>
                         <arg>${project.build.directory}/.scala_dependencies</arg>
                         <arg>-opt-warnings</arg>
+                        <arg>-language:implicitConversions</arg>
                     </args>
                     <compilerPlugins>
                         <compilerPlugin>

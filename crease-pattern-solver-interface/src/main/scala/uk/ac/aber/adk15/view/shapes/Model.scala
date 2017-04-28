@@ -1,5 +1,6 @@
 package uk.ac.aber.adk15.view.shapes
 
+import uk.ac.aber.adk15.geometry.Point
 import uk.ac.aber.adk15.paper._
 
 import scalafx.scene.canvas.GraphicsContext
@@ -27,7 +28,7 @@ final class Model(model: CreasePattern, xBounds: (Double, Double), yBounds: (Dou
       (for {
         layer <- model.layers
         fold  <- layer.folds
-        point <- fold.toSet
+        point <- fold.points
       } yield op(point)).max
 
     val largest = math.max(max(_.x), max(_.y))
@@ -40,7 +41,7 @@ final class Model(model: CreasePattern, xBounds: (Double, Double), yBounds: (Dou
     model.layers foreach { layer =>
       val foldsToShade = (layer.creasedFolds ++ layer.paperBoundaries).toList
 
-      val externalPoints = foldsToShade.flatMap(_.toSet).map(p => normalise(p.x, p.y)).distinct
+      val externalPoints = foldsToShade.flatMap(_.points).map(p => normalise(p.x, p.y)).distinct
 
       gc.fillPolygon(externalPoints.sortBy(Function.tupled((a, b) => a + b)))
 

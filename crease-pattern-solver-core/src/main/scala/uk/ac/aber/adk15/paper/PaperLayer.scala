@@ -1,7 +1,7 @@
 package uk.ac.aber.adk15.paper
 
 import com.typesafe.scalalogging.Logger
-import uk.ac.aber.adk15.paper.Point.Helpers._
+import uk.ac.aber.adk15.geometry.Point
 
 import scala.Function.tupled
 import scala.annotation.tailrec
@@ -28,9 +28,9 @@ case class PaperLayer(folds: List[Fold]) {
   def segmentOnFold(fold: Fold): (PaperLayer, PaperLayer) = {
     val (start, end) = (fold.start, fold.end)
 
-    def isOnLeft(e: Fold)   = (e.toSet map (_ compareTo (start, end))).sum < 0
-    def isOnRight(e: Fold)  = (e.toSet map (_ compareTo (start, end))).sum > 0
-    def isOnCentre(e: Fold) = (e.toSet map (_ compareTo (start, end))).sum == 0
+    def isOnLeft(e: Fold)   = (e.points map (_ compareTo (start, end))).sum < 0
+    def isOnRight(e: Fold)  = (e.points map (_ compareTo (start, end))).sum > 0
+    def isOnCentre(e: Fold) = (e.points map (_ compareTo (start, end))).sum == 0
 
     val centreLines = (folds filter isOnCentre) map (_.crease)
     val leftLines   = (folds filter isOnLeft) ++ centreLines
@@ -68,8 +68,6 @@ case class PaperLayer(folds: List[Fold]) {
     * Merges two layers together to form one layer. It will fail
     * if the layers cannot be merged without overlapping. This is
     * because overlapping paper must be on another layer.
-    *
-    * TODO: Update winding number reference
     *
     * @param otherLayer the layer to merge with
     * @return an optional merged paper layer, with none if the merge failed
@@ -125,7 +123,7 @@ case class PaperLayer(folds: List[Fold]) {
           layerPoints) ^ isOnEdge(foldToTest.end, layerPoints))) {
       val edgeCheckedFold = accountForEdges(foldToTest, layerPoints)
 
-      edgeCheckedFold.toSet exists (pointOnFold => {
+      edgeCheckedFold.points exists (pointOnFold => {
         if (isInBoundingBox(pointOnFold, layerPoints)) {
           val polygon = layerPoints map (_._1)
           findWindingNumber(pointOnFold, polygon :+ polygon.head) != 0

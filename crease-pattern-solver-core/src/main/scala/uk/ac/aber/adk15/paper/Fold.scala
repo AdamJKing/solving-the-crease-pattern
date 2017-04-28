@@ -1,6 +1,7 @@
 package uk.ac.aber.adk15.paper
 
-import uk.ac.aber.adk15.paper.Point.Helpers._
+import uk.ac.aber.adk15.geometry.{Line, Point}
+import uk.ac.aber.adk15.paper.newapi.NewFold
 
 import scala.math.abs
 
@@ -54,14 +55,14 @@ case class Fold(start: Point, end: Point, foldType: FoldType) {
 
   override def toString = s"$start $foldType $end"
 
-  def toSet = Set(start, end)
+  def points = Set(start, end)
 
   def crease: Fold = foldType match {
     case PaperBoundary | CreasedFold => this
     case MountainFold | ValleyFold   => Fold(start, end, CreasedFold)
   }
 
-  def contains(point: Point): Boolean = toSet.contains(point)
+  def contains(point: Point): Boolean = points.contains(point)
 
   def getOther(point: Point): Point = {
     require(contains(point))
@@ -110,9 +111,18 @@ case object PaperBoundary extends FoldType {
   */
 object PaperEdgeHelpers {
   final implicit class PaperEdgeAssoc(val start: Point) extends AnyVal {
-    @inline def /\(end: Point) = Fold(start, end, MountainFold)
-    @inline def \/(end: Point) = Fold(start, end, ValleyFold)
-    @inline def ~~(end: Point) = Fold(start, end, CreasedFold)
-    @inline def --(end: Point) = Fold(start, end, PaperBoundary)
+    @deprecated
+    @inline def /\(end: Point): Fold = Fold(start, end, MountainFold)
+    @deprecated
+    @inline def \/(end: Point): Fold = Fold(start, end, ValleyFold)
+    @deprecated
+    @inline def ~~(end: Point): Fold = Fold(start, end, CreasedFold)
+    @deprecated
+    @inline def --(end: Point): Fold = Fold(start, end, PaperBoundary)
+
+    @inline def +/\(end: Point): NewFold = NewFold(Line(start, end), MountainFold)
+    @inline def +\/(end: Point): NewFold = NewFold(Line(start, end), ValleyFold)
+    @inline def +~~(end: Point): NewFold = NewFold(Line(start, end), CreasedFold)
+    @inline def +--(end: Point): NewFold = NewFold(Line(start, end), PaperBoundary)
   }
 }

@@ -36,7 +36,7 @@ class FoldSelectionServiceImpl extends FoldSelectionService {
       val (x4, y4) = (line.end.x, line.end.y)
 
       // if the lines are the same
-      def anySharedPoints = line.toSet exists (fold.toSet contains _)
+      def anySharedPoints = line.points exists (fold.points contains _)
 
       if (line == fold || anySharedPoints) true
       else {
@@ -51,8 +51,8 @@ class FoldSelectionServiceImpl extends FoldSelectionService {
         val py = (((x1 * y2 - y1 * x2) * (y3 - y4)) - (y1 - y2) * (x3 * y4 - y3 * x4)) / (((x1 - x2) * (x3 - y4)) - (y1 - y2) * (x3 - x4))
 
         // if the intersection is within our range
-        val xValues = for (fold <- creasedFolds; points <- fold.toSet) yield points.x
-        val yValues = for (fold <- creasedFolds; points <- fold.toSet) yield points.y
+        val xValues = for (fold <- creasedFolds; points <- fold.points) yield points.x
+        val yValues = for (fold <- creasedFolds; points <- fold.points) yield points.y
 
         val (xMin, xMax) = (xValues.min, xValues.max)
         val (yMin, yMax) = (yValues.min, yValues.max)
