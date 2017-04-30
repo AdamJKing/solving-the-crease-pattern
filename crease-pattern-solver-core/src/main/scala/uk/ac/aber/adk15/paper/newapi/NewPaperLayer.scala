@@ -1,15 +1,12 @@
 package uk.ac.aber.adk15.paper.newapi
 
-import com.typesafe.scalalogging.Logger
-import uk.ac.aber.adk15.geometry.{Line, Polygon}
+import uk.ac.aber.adk15.geometry.{Line, Point, Polygon}
 import uk.ac.aber.adk15.paper._
 import uk.ac.aber.adk15.paper.newapi.NewPaperLayer._
 
 import scala.Function.tupled
 
 case class NewPaperLayer(private val shapes: Set[Polygon], private val folds: Map[Line, FoldType]) {
-
-  private val logger = Logger[NewPaperLayer]
 
   def segmentOnLine(segmentLine: Line): (NewPaperLayer, NewPaperLayer) = {
     val (affectedShapes, unaffectedShapes) = shapes partition { shape =>
@@ -19,20 +16,25 @@ case class NewPaperLayer(private val shapes: Set[Polygon], private val folds: Ma
     val newShapes = affectedShapes flatMap (shape =>
       tupled(Set(_: Polygon, _: Polygon))(shape slice segmentLine))
 
+    @inline
     def filterByPosition(positionFilter: Double => Boolean) =
       (newShapes ++ unaffectedShapes) filter (shape => positionFilter(shape compareTo segmentLine))
 
     val left  = filterByPosition(_ < 0)
     val right = filterByPosition(_ > 0)
 
-    val (leftFolds, rightFolds) = folds partition {
-      tupled((line, _) =>
-        line map { (a, b) =>
-          left exists { shape =>
-            (shape contains a) && (shape contains b)
-          }
-      })
-    }
+    val leftFolds = folds filter tupled((line, _) => {
+      line map { (a, b) =>
+        left exists (shape => (shape contains a) && (shape contains b))
+      }
+    })
+
+    val rightFolds = folds filter tupled((line, _) =>
+      line map { (a, b) =>
+        right exists { shape =>
+          (shape contains a) && (shape contains b)
+        }
+    })
 
     val creasedLeftFolds  = leftFolds creaseFoldsAlong segmentLine
     val creasedRightFolds = rightFolds creaseFoldsAlong segmentLine
@@ -43,7 +45,7 @@ case class NewPaperLayer(private val shapes: Set[Polygon], private val folds: Ma
   def rotateAround(rotationLine: Line): NewPaperLayer = {
     val rotatedShapes = shapes map (_ flatMap (_ reflectedOver rotationLine))
     val rotatedFolds = folds map tupled((line, foldType) =>
-      (line flatMap (_ reflectedOver rotationLine)) -> (foldType match {
+      (line mapValues (_ reflectedOver rotationLine)) -> (foldType match {
         case MountainFold    => ValleyFold
         case ValleyFold      => MountainFold
         case other: FoldType => other
@@ -62,27 +64,25 @@ case class NewPaperLayer(private val shapes: Set[Polygon], private val folds: Ma
     } else None
   }
 
-  def coversLine(line: Line): Boolean = shapes exists { shape =>
-    line map ((a, b) => (shape overlaps a) && (shape overlaps b))
-  }
+  def coversLine(line: Line): Boolean =
+    shapes exists (shape => line map ((a, b) => coversPoint(a) && coversPoint(b)))
+
+  def coversPoint(point: Point): Boolean =
+    shapes exists (shape => (shape overlaps point) || (shape isOnEdge point))
 
   def surfaceArea: Double = (shapes map (_.surfaceArea)).sum
 
+  def contains(foldLine: Line): Boolean = folds contains foldLine
   def contains(fold: NewFold): Boolean =
-    shapes exists { shape =>
-      val containsLine      = fold.line map ((a, b) => (shape contains a) && (shape contains b))
-      val hasFoldAssignment = folds(fold.line) == fold.foldType
+    contains(fold.line) && (folds get fold.line contains fold.foldType)
 
-      containsLine && hasFoldAssignment
-    }
+  def mountainFolds: Set[NewFold]   = extractFolds(MountainFold)
+  def valleyFolds: Set[NewFold]     = extractFolds(ValleyFold)
+  def creasedFolds: Set[NewFold]    = extractFolds(CreasedFold)
+  def paperBoundaries: Set[NewFold] = extractFolds(PaperBoundary)
 
-  def mountainFolds: Set[Line]   = extractFolds(MountainFold)
-  def valleyFolds: Set[Line]     = extractFolds(ValleyFold)
-  def creasedFolds: Set[Line]    = extractFolds(CreasedFold)
-  def paperBoundaries: Set[Line] = extractFolds(PaperBoundary)
-
-  def foldable: Set[Line]   = mountainFolds ++ valleyFolds
-  def unfoldable: Set[Line] = creasedFolds ++ paperBoundaries
+  def foldable: Set[Line]   = (mountainFolds ++ valleyFolds) map (_.line)
+  def unfoldable: Set[Line] = (creasedFolds ++ paperBoundaries) map (_.line)
 
   override def equals(other: Any): Boolean = other match {
     case NewPaperLayer(otherShapes, otherFolds) => shapes == otherShapes && folds == otherFolds
@@ -95,7 +95,7 @@ case class NewPaperLayer(private val shapes: Set[Polygon], private val folds: Ma
   }
 
   private def extractFolds(foldType: FoldType) =
-    (folds filter { case (_, ft) => foldType == ft }).keySet
+    (folds withFilter (_._2 == foldType) map tupled(NewFold)).toSet
 }
 
 object NewPaperLayer {
@@ -110,9 +110,7 @@ object NewPaperLayer {
 
   implicit final class FoldMapOps(private val self: Map[Line, FoldType]) extends AnyVal {
     def creaseFoldsAlong(foldLine: Line): Map[Line, FoldType] =
-      self map tupled { (line, foldType) =>
-        if (line alignsWith foldLine) (line, CreasedFold)
-        else (line, foldType)
-      }
+      self map tupled((line, foldType) =>
+        if (line alignsWith foldLine) (line, CreasedFold) else (line, foldType))
   }
 }

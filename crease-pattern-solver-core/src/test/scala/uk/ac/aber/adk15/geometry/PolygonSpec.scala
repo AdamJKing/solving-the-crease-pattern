@@ -45,7 +45,7 @@ class PolygonSpec extends CommonFlatSpec {
     (IrregularPolygon compareTo centralLine) shouldBe centre
   }
 
-  "Checking if a shape overlaps a line" should "correctly guage if the line is overlapped" in {
+  "Checking if a shape overlaps a line" should "correctly gauge if the line is overlapped" in {
     // given
     val overlappedPoint = Point(4, 4)
     val uncoveredPoint  = Point(3, 0)

@@ -1,26 +1,45 @@
 package uk.ac.aber.adk15.paper.newapi
 
-protected class FoldContext(creasePattern: NewCreasePattern, fold: NewFold) {
+import uk.ac.aber.adk15.geometry.Line
+import uk.ac.aber.adk15.paper.ValleyFold
 
-  private lazy val affectedLayers = creasePattern.layers filter isFoldable
-  private lazy val segmentedLayers = {
-    val (left, right) = segmentLayers(affectedLayers)
-    if (surfaceArea(left) < surfaceArea(right))
-      (left, right)
-    else
-      (right, left)
+import scala.collection.mutable
+
+protected class FoldContext(private val creasePattern: NewCreasePattern, private val fold: NewFold) {
+
+  private var stackA       = mutable.Map[Int, NewPaperLayer]()
+  private var stackB       = mutable.Map[Int, NewPaperLayer]()
+  private var unattributed = mutable.Map[Int, NewPaperLayer]()
+
+  for ((layer, index) <- creasePattern.layers.zipWithIndex) {
+    if (layer.isFoldable) {
+      val (layerA, layerB) = layer segmentOnLine fold.line
+      stackA += (index -> layerA)
+      stackB += (index -> layerB)
+    } else {
+      unattributed += (index -> layer)
+    }
   }
 
-  lazy val layersToFold: List[NewPaperLayer]  = segmentedLayers._1
-  lazy val layersToLeave: List[NewPaperLayer] = segmentedLayers._2
+  lazy val (foldableLayers, unaffectedLayers) = {
+    if (surfaceArea(stackA.values) < surfaceArea(stackB.values)) {
+      (stackA.toMap, stackB.toMap ++ unattributed)
+    } else {
+      (stackB.toMap, stackA.toMap ++ unattributed)
+    }
+  }
 
-  lazy val unaffectedLayers: List[NewPaperLayer] = creasePattern.layers diff affectedLayers
+  val foldAbove: Boolean = fold.foldType == ValleyFold
 
-  private def isFoldable(layer: NewPaperLayer) =
-    (layer contains fold) || !(layer coversLine fold.line)
+  def foldLine: Line = fold.line
 
-  private def segmentLayers(layers: List[NewPaperLayer]) =
-    (affectedLayers map (_ segmentOnLine fold.line)).unzip
+  //  private def segmentLayers(layers: List[NewPaperLayer]) =
+  //    (affectedLayers map (_ segmentOnLine fold.line)).unzip
+  //
 
-  private def surfaceArea(layers: List[NewPaperLayer]) = (layers map (_.surfaceArea)).max
+  private def surfaceArea(layers: Iterable[NewPaperLayer]) = (layers map (_.surfaceArea)).max
+
+  private implicit class NewPaperLayerOps(private val layer: NewPaperLayer) {
+    def isFoldable: Boolean = (layer contains fold) || !(layer coversLine fold.line)
+  }
 }

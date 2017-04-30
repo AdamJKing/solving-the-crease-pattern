@@ -1,7 +1,6 @@
 package uk.ac.aber.adk15.paper.newapi
 
 import org.mockito.BDDMockito.given
-import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify}
 import uk.ac.aber.adk15.CommonFlatSpec
 import uk.ac.aber.adk15.geometry.{Line, Point, Polygon}
@@ -12,14 +11,11 @@ class NewPaperLayerSpec extends CommonFlatSpec {
 
   "Segmenting a paper layer into two parts" should "yield the proper results" in {
     // given
-    val segmentLine = mock[Line]
+    val segmentLine = Line(mock[Point], mock[Point])
 
     val leftFoldMap     = Map(segmentLine -> MountainFold)
     val rightFoldMap    = Map(segmentLine -> MountainFold)
-    val originalFoldMap = mockFoldMap
-
-    val anyPredicate = any[((Line, FoldType)) => Boolean]
-    given(originalFoldMap partition anyPredicate) willReturn ((leftFoldMap, rightFoldMap))
+    val originalFoldMap = leftFoldMap ++ rightFoldMap
 
     val originalShape = mock[Polygon]
     given(originalShape overlaps segmentLine.a) willReturn true
@@ -27,9 +23,13 @@ class NewPaperLayerSpec extends CommonFlatSpec {
 
     val leftShape = mock[Polygon]
     given(leftShape compareTo segmentLine) willReturn -1
+    given(leftShape contains segmentLine.a) willReturn true
+    given(leftShape contains segmentLine.b) willReturn true
 
     val rightShape = mock[Polygon]
     given(rightShape compareTo segmentLine) willReturn 1
+    given(rightShape contains segmentLine.a) willReturn true
+    given(rightShape contains segmentLine.b) willReturn true
 
     given(originalShape slice segmentLine) willReturn ((leftShape, rightShape))
 
@@ -39,8 +39,8 @@ class NewPaperLayerSpec extends CommonFlatSpec {
     val (leftSide, rightSide) = paperLayer segmentOnLine segmentLine
 
     // then
-    leftSide shouldBe NewPaperLayer(Set(leftShape), leftFoldMap)
-    rightSide shouldBe NewPaperLayer(Set(rightShape), rightFoldMap)
+    leftSide shouldBe NewPaperLayer(Set(leftShape), Map(segmentLine   -> CreasedFold))
+    rightSide shouldBe NewPaperLayer(Set(rightShape), Map(segmentLine -> CreasedFold))
   }
 
   "Rotating over a given axis" should "should yield expected results" in {
@@ -55,12 +55,12 @@ class NewPaperLayerSpec extends CommonFlatSpec {
     given(lineToRotate.b reflectedOver rotationLine) willReturn lineToRotate.b
 
     // when
-    val rotatedPaperlayer = paperLayer rotateAround rotationLine
+    val rotatedPaperLayer = paperLayer rotateAround rotationLine
 
     // then
     verify(pointToRotate, times(2)) reflectedOver rotationLine
-    rotatedPaperlayer.valleyFolds should contain(lineToRotate)
-    rotatedPaperlayer.mountainFolds should not contain lineToRotate
+    rotatedPaperLayer.valleyFolds should contain(lineToRotate)
+    rotatedPaperLayer.mountainFolds should not contain lineToRotate
   }
 
   "Merging two correct layers" should "yield the expected results" in {

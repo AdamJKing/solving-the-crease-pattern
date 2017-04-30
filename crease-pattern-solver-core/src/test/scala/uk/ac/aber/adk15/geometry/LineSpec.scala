@@ -55,7 +55,7 @@ class LineSpec extends CommonFlatSpec {
     val line                   = Line(a, b)
 
     // when
-    val modifiedLine = line flatMap (p => Point(p.x + 10, p.y + 10))
+    val modifiedLine = line mapValues (p => Point(p.x + 10, p.y + 10))
 
     // then
     modifiedLine shouldBe Line(modifiedA, modifiedB)

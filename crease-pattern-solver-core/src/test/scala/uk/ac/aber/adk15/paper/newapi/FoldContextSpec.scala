@@ -7,30 +7,7 @@ import uk.ac.aber.adk15.paper.MountainFold
 
 class FoldContextSpec extends CommonFlatSpec {
 
-  "Fold context" should "correctly identify unaffected layers" in {
-    // given
-    val creasePattern = mock[NewCreasePattern]
-    val layers        = List.fill(3)(mock[NewPaperLayer])
-    val fold          = NewFold(mock[Line], MountainFold)
-
-    given(creasePattern.layers) willReturn layers
-
-    given(layers.head contains fold) willReturn false
-    given(layers.head coversLine fold.line) willReturn true
-
-    layers.tail foreach { layer =>
-      given(layer contains fold) willReturn true
-      given(layer coversLine fold.line) willReturn false
-    }
-
-    // when
-    val foldContext = new FoldContext(creasePattern, fold)
-
-    // then
-    foldContext.unaffectedLayers shouldBe List(layers.head)
-  }
-
-  "Fold context" should "correctly identify which layers should be folded" in {
+  "The fold context for a mountain fold" should "correctly identify fold layers" in {
     // given
     val creasePattern   = mock[NewCreasePattern]
     val affectedLayer   = mock[NewPaperLayer]
@@ -54,10 +31,17 @@ class FoldContextSpec extends CommonFlatSpec {
     val foldContext = new FoldContext(creasePattern, fold)
 
     // when
-    foldContext.layersToFold shouldBe List(layerToFold)
+    foldContext.foldableLayers shouldBe Map(
+      0 -> layerToFold
+    )
+
+    foldContext.unaffectedLayers shouldBe Map(
+      1 -> unaffectedLayer,
+      0 -> layerToLeave
+    )
   }
 
-  "Fold context" should "correctly identify which layers should be untouched by the fold" in {
+  "The fold context for a valley fold" should "correctly identify fold layers" in {
     // given
     val creasePattern   = mock[NewCreasePattern]
     val affectedLayer   = mock[NewPaperLayer]
@@ -81,6 +65,13 @@ class FoldContextSpec extends CommonFlatSpec {
     val foldContext = new FoldContext(creasePattern, fold)
 
     // when
-    foldContext.layersToLeave shouldBe List(layerToLeave)
+    foldContext.foldableLayers shouldBe Map(
+      0 -> layerToFold
+    )
+
+    foldContext.unaffectedLayers shouldBe Map(
+      1 -> unaffectedLayer,
+      0 -> layerToLeave
+    )
   }
 }

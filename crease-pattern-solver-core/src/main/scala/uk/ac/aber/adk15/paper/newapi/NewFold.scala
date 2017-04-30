@@ -44,5 +44,5 @@ case class NewFold(line: Line, foldType: FoldType) {
   }
 
   def contains(point: Point): Boolean     = points contains point
-  def flatMap(f: Point => Point): NewFold = NewFold(line flatMap f, foldType)
+  def flatMap(f: Point => Point): NewFold = NewFold(line mapValues f, foldType)
 }
