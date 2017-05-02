@@ -3,8 +3,9 @@ package uk.ac.aber.adk15.geometry
 import scala.annotation.tailrec
 
 class Polygon(val points: Set[Point]) {
+  require(points.size > 2, "A shape must have more than two points")
 
-  private lazy val boundingBox = {
+  lazy val boundingBox: Rectangle = {
     val largestY  = (points maxBy (_.y)).y
     val smallestY = (points minBy (_.y)).y
     val largestX  = (points maxBy (_.x)).x
@@ -113,21 +114,6 @@ class Polygon(val points: Set[Point]) {
     // http://www.mathopenref.com/coordtrianglearea.html
     def f(a: Point, b: Point, c: Point) = a.x * (b.y - c.y)
     math.abs(f(a, b, c) + f(b, c, a) + f(c, a, b)) / 2
-  }
-}
-
-case class Rectangle(upperLeft: Point, lowerRight: Point)
-    extends Polygon(
-      Set(upperLeft,
-          Point(upperLeft.x, lowerRight.y),
-          lowerRight,
-          Point(lowerRight.x, upperLeft.y))) {
-
-  override def overlaps(point: Point): Boolean = {
-    val inRangeX = point.x >= upperLeft.x && point.x <= lowerRight.x
-    val inRangeY = point.y >= lowerRight.y && point.y <= upperLeft.y
-
-    inRangeX && inRangeY
   }
 }
 

@@ -2,9 +2,9 @@ package uk.ac.aber.adk15.model.serialisers
 
 import org.json4s.CustomSerializer
 import org.json4s.JsonAST.{JNull, JString}
-import uk.ac.aber.adk15.paper.{FoldType, MountainFold, PaperBoundary, ValleyFold}
+import uk.ac.aber.adk15.paper.fold.{FoldType, MountainFold, PaperBoundary, ValleyFold}
 
-case object FoldSerialiser
+case object FoldTypeSerialiser
     extends CustomSerializer[FoldType](_ =>
       ({
         case JString(foldType) =>

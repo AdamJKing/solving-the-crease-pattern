@@ -1,10 +1,12 @@
-package uk.ac.aber.adk15.paper.newapi
+package uk.ac.aber.adk15.paper.fold
+
+import uk.ac.aber.adk15.paper.{CreasePattern, PaperLayer}
 
 import scala.Function.tupled
 
 class OngoingFold(private val foldContext: FoldContext) {
 
-  def crease: NewCreasePattern = {
+  def crease: CreasePattern = {
     val indexOfFold = {
       if (foldContext.foldAbove)
         foldContext.foldableLayers.keys.min
@@ -22,13 +24,13 @@ class OngoingFold(private val foldContext: FoldContext) {
     })
     val unaffectedMap = foldContext.unaffectedLayers
 
-    new NewCreasePattern(
+    new CreasePattern(
       repair(unaffectedMap.toList sortBy (_._1), foldedMap.toList sortBy (_._1))
     )
   }
 
-  private def repair(unaffectedLayers: List[(Int, NewPaperLayer)],
-                     foldedLayers: List[(Int, NewPaperLayer)]): List[NewPaperLayer] = {
+  private def repair(unaffectedLayers: List[(Int, PaperLayer)],
+                     foldedLayers: List[(Int, PaperLayer)]): List[PaperLayer] = {
 
     if (unaffectedLayers.isEmpty) return foldedLayers map (_._2)
     if (foldedLayers.isEmpty) return unaffectedLayers map (_._2)
@@ -38,15 +40,21 @@ class OngoingFold(private val foldContext: FoldContext) {
         if (xIndex == yIndex) {
           xLayer mergeWith yLayer map (_ :: repair(xs, ys)) getOrElse {
             if (foldContext.foldAbove)
-              yLayer :: xLayer :: repair(xs, ys)
-            else
               xLayer :: yLayer :: repair(xs, ys)
+            else
+              yLayer :: xLayer :: repair(xs, ys)
           }
         } else {
           if (xIndex < yIndex) {
-            xLayer :: repair(xs, foldedLayers)
+            if (foldContext.foldAbove)
+              repair(xs, foldedLayers) :+ xLayer
+            else
+              xLayer :: repair(xs, foldedLayers)
           } else {
-            yLayer :: repair(ys, unaffectedLayers)
+            if (foldContext.foldAbove)
+              yLayer :: repair(unaffectedLayers, ys)
+            else
+              repair(unaffectedLayers, ys) :+ yLayer
           }
         }
     }

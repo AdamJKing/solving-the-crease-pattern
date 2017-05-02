@@ -1,28 +1,32 @@
 package uk.ac.aber.adk15.executors.ant
 
 import org.mockito.BDDMockito._
+import org.mockito.Matchers._
 import org.scalatest.Inside
 import uk.ac.aber.adk15.CommonFlatSpec
 import uk.ac.aber.adk15.geometry.Point
 import uk.ac.aber.adk15.paper.CreasePattern
-import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
-import uk.ac.aber.adk15.services.FoldSelectionService
+import uk.ac.aber.adk15.paper.fold.PaperEdgeHelpers._
+import uk.ac.aber.adk15.paper.fold.{Fold, OngoingFold}
 
 class FoldNodeSpec extends CommonFlatSpec with Inside {
 
-  private implicit var foldSelectionService = mock[FoldSelectionService]
-
   it should "correctly generate all children" in {
     // given
-    val myCreasePattern = mock[CreasePattern]
-    val myChildren      = Set(Point(0, 0) /\ Point(10, 10))
+    val creasePattern = mock[CreasePattern]
+    val children      = Set(Point(0, 0) /\ Point(10, 10))
+    val ongoingFold   = mock[OngoingFold]
 
-    given(foldSelectionService getAvailableOperations myCreasePattern) willReturn myChildren
+    val newCreasePattern = mock[CreasePattern]
+
+    given(creasePattern.availableFolds) willReturn children
+    given(creasePattern fold any[Fold]) willReturn ongoingFold
+    given(ongoingFold.crease) willReturn newCreasePattern
 
     // when
-    val operationNode = FoldNode(myCreasePattern, None)
+    val operationNode = FoldNode(creasePattern, None)
 
     // then
-    every(operationNode.children) shouldBe a[FoldNode]
+    operationNode.children should contain(FoldNode(newCreasePattern, Some(children.head)))
   }
 }

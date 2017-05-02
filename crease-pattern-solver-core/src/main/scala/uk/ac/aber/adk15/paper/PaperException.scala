@@ -1,5 +1,7 @@
 package uk.ac.aber.adk15.paper
 
+import uk.ac.aber.adk15.paper.fold.Fold
+
 abstract class PaperException(msg: String) extends Exception(msg)
 
 class EdgeAlreadyCreasedException(edge: Fold)

@@ -100,3 +100,7 @@ case class Point(x: Double, y: Double) {
 
   @inline final def applyConstant(constant: Double): Point = Point(constant * x, constant * y)
 }
+
+object DistanceFromOriginPointOrdering extends Ordering[Point] {
+  override def compare(a: Point, b: Point): Int = (a.x compareTo b.x) + (a.y compareTo b.y)
+}

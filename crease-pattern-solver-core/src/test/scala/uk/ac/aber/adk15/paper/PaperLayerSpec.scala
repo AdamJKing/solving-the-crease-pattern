@@ -1,353 +1,219 @@
 package uk.ac.aber.adk15.paper
 
+import org.mockito.BDDMockito.given
+import org.mockito.Mockito.verify
 import uk.ac.aber.adk15.CommonFlatSpec
-import uk.ac.aber.adk15.geometry.Point
-import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
+import uk.ac.aber.adk15.geometry.{Line, Point, Polygon}
+import uk.ac.aber.adk15.paper.PaperLayer._
+import uk.ac.aber.adk15.paper.fold._
 
 class PaperLayerSpec extends CommonFlatSpec {
 
-  /**
-    * 0,0 -------- 50,0 -------- 100,0
-    *  |             |             |
-    *  |             |             |
-    *  |             |             |
-    *  |             |             |
-    *  |             |             |
-    * 0,50 ------- 50,50 ------- 100,50
-    *  |             |             |
-    *  |             |             |
-    *  |             |             |
-    *  |             |             |
-    *  |             |             |
-    * 0,100 ------ 50,100 ----- 100,100
-    */
-  private val paperLayer = PaperLayer(
-    List(
-      Point(0, 0) -- Point(50, 0),
-      Point(50, 0) -- Point(100, 0),
-      Point(100, 0) -- Point(100, 50),
-      Point(100, 50) -- Point(100, 100),
-      Point(100, 100) -- Point(50, 100),
-      Point(50, 100) -- Point(0, 100),
-      Point(0, 100) -- Point(0, 50),
-      Point(0, 50) -- Point(0, 0),
-      Point(50, 0) /\ Point(50, 50),
-      Point(50, 50) /\ Point(50, 100),
-      Point(0, 50) \/ Point(50, 50),
-      Point(50, 50) \/ Point(100, 50)
-    ))
-
-  it should "allow for layers to be split over a vertical line" in {
-    // when
-    val (left, right) = paperLayer segmentOnFold Fold(Point(50, 0), Point(50, 100), MountainFold)
-
-    // then
-
-    withClue("Left was wrong: ")(
-      left should be(PaperLayer(List(
-        Point(0, 0) -- Point(50, 0),
-        Point(50, 100) -- Point(0, 100),
-        Point(0, 100) -- Point(0, 50),
-        Point(0, 50) -- Point(0, 0),
-        Point(50, 0) ~~ Point(50, 50),
-        Point(50, 50) ~~ Point(50, 100),
-        Point(0, 50) \/ Point(50, 50)
-      ))))
-
-    withClue("Right was wrong: ")(
-      right should be(PaperLayer(List(
-        Point(50, 0) -- Point(100, 0),
-        Point(100, 0) -- Point(100, 50),
-        Point(100, 50) -- Point(100, 100),
-        Point(100, 100) -- Point(50, 100),
-        Point(50, 0) ~~ Point(50, 50),
-        Point(50, 50) ~~ Point(50, 100),
-        Point(50, 50) \/ Point(100, 50)
-      ))))
-  }
-
-  it should "allow for layers to be split over a horizontal line" in {
-    // when
-    val (bottom, top) = paperLayer segmentOnFold Fold(Point(0, 50), Point(100, 50), MountainFold)
-
-    // then
-
-    withClue("Top was wrong: ")(
-      top should be(PaperLayer(List(
-        Point(0, 0) -- Point(50, 0),
-        Point(50, 0) -- Point(100, 0),
-        Point(100, 0) -- Point(100, 50),
-        Point(0, 50) -- Point(0, 0),
-        Point(50, 0) /\ Point(50, 50),
-        Point(0, 50) ~~ Point(50, 50),
-        Point(50, 50) ~~ Point(100, 50)
-      ))))
-
-    withClue("Bottom was wrong: ")(
-      bottom should be(PaperLayer(List(
-        Point(100, 50) -- Point(100, 100),
-        Point(100, 100) -- Point(50, 100),
-        Point(50, 100) -- Point(0, 100),
-        Point(0, 100) -- Point(0, 50),
-        Point(50, 50) /\ Point(50, 100),
-        Point(0, 50) ~~ Point(50, 50),
-        Point(50, 50) ~~ Point(100, 50)
-      ))))
-  }
-
-  it should "allow for layers to be split over an arbitrary line" in {
-    // when
-    val (lowerRight, upperLeft) = paperLayer segmentOnFold Fold(Point(0, 100),
-                                                                Point(100, 0),
-                                                                MountainFold)
-
-    withClue("Upper Left was wrong: ")(
-      upperLeft should be(
-        PaperLayer(List(
-          Point(0, 0) -- Point(50, 0),
-          Point(50, 0) -- Point(100, 0),
-          Point(0, 50) -- Point(0, 0),
-          Point(0, 100) -- Point(0, 50),
-          Point(50, 0) /\ Point(50, 50),
-          Point(0, 50) \/ Point(50, 50)
-        )))
-    )
-
-    withClue("Lower Right was wrong: ")(
-      lowerRight should be(
-        PaperLayer(List(
-          Point(100, 0) -- Point(100, 50),
-          Point(100, 50) -- Point(100, 100),
-          Point(100, 100) -- Point(50, 100),
-          Point(50, 100) -- Point(0, 100),
-          Point(50, 50) /\ Point(50, 100),
-          Point(50, 50) \/ Point(100, 50)
-        )))
-    )
-  }
-
-  "Rotating over a given axis" should "should yield expected results" in {
+  "Segmenting a paper layer into two parts" should "yield the proper results" in {
     // given
-    val testLayer = PaperLayer(
-      List(
-        Point(0, 0) /\ Point(50, 50),
-        Point(0, 50) /\ Point(25, 75)
-      ))
+    val segmentLine = Line(mock[Point], mock[Point])
+
+    val leftFoldMap     = Map(segmentLine -> MountainFold)
+    val rightFoldMap    = Map(segmentLine -> MountainFold)
+    val originalFoldMap = leftFoldMap ++ rightFoldMap
+
+    val originalShape = mock[Polygon]
+    given(originalShape overlaps segmentLine.a) willReturn true
+    given(originalShape overlaps segmentLine.b) willReturn true
+
+    val leftShape = mock[Polygon]
+    given(leftShape compareTo segmentLine) willReturn -1
+    given(leftShape contains segmentLine.a) willReturn true
+    given(leftShape contains segmentLine.b) willReturn true
+
+    val rightShape = mock[Polygon]
+    given(rightShape compareTo segmentLine) willReturn 1
+    given(rightShape contains segmentLine.a) willReturn true
+    given(rightShape contains segmentLine.b) willReturn true
+
+    given(originalShape slice segmentLine) willReturn ((leftShape, rightShape))
+
+    val paperLayer = PaperLayer(Set(originalShape), originalFoldMap)
 
     // when
-    val rotated = testLayer rotateAround (Point(0, 100), Point(100, 0))
+    val (leftSide, rightSide) = paperLayer segmentOnLine segmentLine
 
     // then
-    rotated should be(
-      PaperLayer(
-        List(
-          Point(100, 100) \/ Point(50, 50),
-          Point(50, 100) \/ Point(25, 75)
-        )))
+    leftSide shouldBe Some(PaperLayer(Set(leftShape), Map(segmentLine   -> CreasedFold)))
+    rightSide shouldBe Some(PaperLayer(Set(rightShape), Map(segmentLine -> CreasedFold)))
   }
 
-  "Merging two correct yet aligned layers" should "yield the expected results" in {
+//  "Rotating over a given axis" should "should yield expected results" in {
+//    // given
+//    val rotationLine  = mock[Line]
+//    val shapeToRotate = mock[Polygon]
+//    val lineToRotate  = Line(shapeToRotate, mock[Point])
+//    val folds         = Map(lineToRotate -> MountainFold)
+//    val paperLayer    = PaperLayer(Set(Polygon(lineToRotate.a, lineToRotate.b)), folds)
+//
+//    given(lineToRotate.a reflectedOver rotationLine) willReturn lineToRotate.a
+//    given(lineToRotate.b reflectedOver rotationLine) willReturn lineToRotate.b
+//
+//    // when
+//    val rotatedPaperLayer = paperLayer rotateAround rotationLine
+//
+//    // then
+//    verify(pointToRotate, times(2)) reflectedOver rotationLine
+//    rotatedPaperLayer.valleyFolds should contain(Fold(lineToRotate, ValleyFold))
+//    rotatedPaperLayer.mountainFolds should not contain Fold(lineToRotate, ValleyFold)
+//  }
+
+  "Merging two correct layers" should "yield the expected results" in {
     // given
+    val newShape            = mock[Polygon]
+    val newPoint            = mock[Point]
+    val nonOverlappingShape = mock[Polygon]
 
-    /**      Layer A                    Layer B
-      * 0,0 ----x--- 50,0         50,0 ----x--- 100,0
-      *  |             |            |             |
-      *  |             |            |             |
-      *  x             x            |             x
-      *  |             |            |             |
-      *  |             |            |             |
-      * 0,50         50,50        50,50         100,50
-      *  |             |            |             |
-      *  |             |            |             |
-      *  x             x            |             x
-      *  |             |            |             |
-      *  |             |            |             |
-      * 0,100 --x--- 50,100       50,100 --x-- 100,100
-      */
-    val validLayerA = PaperLayer(
-      List(
-        Point(0, 0) -- Point(50, 0),
-        Point(0, 100) -- Point(50, 100),
-        Point(0, 0) -- Point(0, 50),
-        Point(0, 50) -- Point(0, 100),
-        Point(50, 0) -- Point(50, 50),
-        Point(50, 50) -- Point(50, 100)
-      ))
+    given(newShape overlaps nonOverlappingShape) willReturn false
+    given(nonOverlappingShape.points) willReturn Set(newPoint)
+    given(newShape isOnEdge newPoint) willReturn false
 
-    val validLayerB = PaperLayer(
-      List(
-        Point(50, 0) -- Point(100, 0),
-        Point(50, 100) -- Point(100, 100),
-        Point(50, 0) -- Point(50, 50),
-        Point(50, 50) -- Point(50, 100),
-        Point(100, 0) -- Point(100, 50),
-        Point(100, 50) -- Point(100, 100)
-      ))
+    val oldFolds    = mockFoldMap
+    val newFolds    = mockFoldMap
+    val mergedFolds = mockFoldMap
+
+    given(oldFolds ++ newFolds) willReturn mergedFolds
+
+    val oldPaperLayer = new PaperLayer(Set(nonOverlappingShape), oldFolds)
+    val newPaperLayer = new PaperLayer(Set(newShape), newFolds)
 
     // when
-    val merged = validLayerA mergeWith validLayerB
+    val mergedPaperLayer = oldPaperLayer mergeWith newPaperLayer
 
     // then
-    merged shouldBe defined
-    merged should contain(
-      PaperLayer(List(
-        Point(0.0, 0.0) -- Point(50.0, 0.0),
-        Point(0.0, 100.0) -- Point(50.0, 100.0),
-        Point(0.0, 0.0) -- Point(0.0, 50.0),
-        Point(0.0, 50.0) -- Point(0.0, 100.0),
-        Point(50.0, 0.0) -- Point(50.0, 50.0),
-        Point(50.0, 50.0) -- Point(50.0, 100.0),
-        Point(50.0, 0.0) -- Point(100.0, 0.0),
-        Point(50.0, 100.0) -- Point(100.0, 100.0),
-        Point(100.0, 0.0) -- Point(100.0, 50.0),
-        Point(100.0, 50.0) -- Point(100.0, 100.0)
-      )))
+    verify(newShape) overlaps nonOverlappingShape
+    verify(nonOverlappingShape).points
+    verify(newShape) isOnEdge newPoint
+
+    mergedPaperLayer shouldBe defined
+    mergedPaperLayer should contain(
+      PaperLayer(Set(nonOverlappingShape, newShape), mergedFolds)
+    )
   }
 
   "Merging two incompatible layers" should "fail to merge" in {
     // given
+    val newShape         = mock[Polygon]
+    val newPoint         = mock[Point]
+    val overlappingShape = mock[Polygon]
 
-    /**      Layer A                    Layer B
-      * 0,0 ----x--- 50,0
-      *  |             |
-      *  |             |
-      *  x             x           0,25 -------- 50,25 --------- 100,25
-      *  |             |            |                               |
-      *  |             |            |                               |
-      * 0,50 ---x--- 50,50         0,50                          100,50
-      *  |             |            |                               |
-      *  |             |            |                               |
-      *  x             x           0,75 -------- 50,75 --------- 100,75
-      *  |             |
-      *  |             |
-      * 0,100 --x--- 50,100
-      */
-    val validLayerA = PaperLayer(
-      List(
-        Point(0, 0) -- Point(50, 0),
-        Point(0, 50) -- Point(50, 50),
-        Point(0, 100) -- Point(50, 100),
-        Point(0, 0) -- Point(0, 50),
-        Point(0, 50) -- Point(0, 100),
-        Point(50, 0) -- Point(50, 50),
-        Point(50, 50) -- Point(50, 100)
-      ))
+    given(newShape overlaps overlappingShape) willReturn true
+    given(overlappingShape.points) willReturn Set(newPoint)
+    given(newShape isOnEdge newPoint) willReturn true
 
-    val validLayerB = PaperLayer(
-      List(
-        Point(0, 25) -- Point(50, 25),
-        Point(50, 25) -- Point(100, 25),
-        Point(100, 25) -- Point(100, 50),
-        Point(100, 50) -- Point(100, 75),
-        Point(100, 75) -- Point(50, 75),
-        Point(50, 75) -- Point(0, 75),
-        Point(0, 75) -- Point(0, 50),
-        Point(0, 50) -- Point(0, 25)
-      ))
+    val oldPaperLayer = new PaperLayer(Set(overlappingShape), mockFoldMap)
+    val newPaperLayer = new PaperLayer(Set(newShape), mockFoldMap)
 
     // when
-    val merged = validLayerA mergeWith validLayerB
+    val mergedPaperLayer = oldPaperLayer mergeWith newPaperLayer
 
     // then
-    merged should not be defined
+    verify(newShape) overlaps overlappingShape
+    verify(overlappingShape).points
+    verify(newShape) isOnEdge newPoint
+
+    mergedPaperLayer should not be defined
+  }
+
+  "Merging two layers where the points overlap" should "fail to merge" in {
+    // given
+    val newShape         = mock[Polygon]
+    val newPoint         = mock[Point]
+    val overlappingShape = mock[Polygon]
+
+    given(newShape overlaps overlappingShape) willReturn false
+    given(overlappingShape.points) willReturn Set(newPoint)
+    given(newShape isOnEdge newPoint) willReturn true
+
+    val oldFolds    = mockFoldMap
+    val newFolds    = mockFoldMap
+    val mergedFolds = mockFoldMap
+
+    given(oldFolds ++ newFolds) willReturn mergedFolds
+
+    val oldPaperLayer = new PaperLayer(Set(overlappingShape), oldFolds)
+    val newPaperLayer = new PaperLayer(Set(newShape), newFolds)
+
+    // when
+    val mergedPaperLayer = oldPaperLayer mergeWith newPaperLayer
+
+    // then
+    verify(newShape) overlaps overlappingShape
+    verify(overlappingShape).points
+    verify(newShape) isOnEdge newPoint
+
+    mergedPaperLayer should not be defined
   }
 
   "Calculating the surface area of a layer" should "yield the correct answers" in {
     // given
-    val square = PaperLayer from (
-      Point(0, 0) -- Point(0, 10),
-      Point(0, 10) -- Point(10, 10),
-      Point(10, 10) -- Point(10, 0),
-      Point(10, 0) -- Point(0, 0)
-    )
+    val smallShape  = mock[Polygon]
+    val largerShape = mock[Polygon]
 
-    val triangle = PaperLayer from (
-      Point(0, 0) -- Point(0, 10),
-      Point(0, 10) -- Point(10, 10),
-      Point(10, 10) -- Point(0, 0)
-    )
+    given(smallShape.surfaceArea) willReturn 10
+    given(largerShape.surfaceArea) willReturn 100
 
-    val complexShape = PaperLayer from (
-      Point(0, 0) -- Point(-5, 10),
-      Point(-5, 10) -- Point(15, 10),
-      Point(15, 10) -- Point(10, 0),
-      Point(10, 0) -- Point(0, 0)
-    )
+    val paperLayer = PaperLayer(Set(smallShape, largerShape), mockFoldMap)
 
     // when
-    val squareSurfaceArea   = square.surfaceArea
-    val triangleSurfaceArea = triangle.surfaceArea
-    val complexSurfaceArea  = complexShape.surfaceArea
+    val paperLayerSurfaceArea = paperLayer.surfaceArea
 
     // then
-    squareSurfaceArea should be(100)
-    triangleSurfaceArea should be(50)
-    complexSurfaceArea should be(150)
-  }
-
-  "Merging layers where the points align incorrectly" should "still refuse to merge the layers" in {
-    // given
-    val diamondA = PaperLayer(
-      List(
-        Point(0, 50) -- Point(50, 0),
-        Point(50, 0) -- Point(100, 50),
-        Point(100, 50) -- Point(50, 100),
-        Point(50, 100) -- Point(0, 50)
-      )
-    )
-
-    val diamondB = PaperLayer(
-      List(
-        Point(10, 60) -- Point(60, 10),
-        Point(60, 10) -- Point(100, 50),
-        Point(100, 50) -- Point(50, 100),
-        Point(50, 100) -- Point(10, 60)
-      )
-    )
-
-    // when
-    val result = diamondA mergeWith diamondB
-
-    // then
-    result should not be defined
+    paperLayerSurfaceArea should be(110)
   }
 
   "The paper layer" should "accurately report which folds are or aren't covered by it" in {
     // given
-    val shape = PaperLayer from (
-      Point(0, 0) -- Point(0, 100),
-      Point(0, 100) -- Point(100, 100),
-      Point(100, 100) -- Point(100, 0),
-      Point(100, 0) -- Point(0, 0),
-      Point(0, 0) /\ Point(50, 50),
-      Point(50, 50) \/ Point(100, 100),
-      Point(0, 100) /\ Point(50, 50),
-      Point(50, 50) \/ Point(100, 0)
-    )
+    val overlappingShape = mock[Polygon]
+    val paperLayer       = PaperLayer(Set(overlappingShape), mockFoldMap)
+    val coveredLine      = Line(mock[Point], mock[Point])
+    val uncoveredLine    = Line(mock[Point], mock[Point])
 
-    val invalidFold      = Point(0, 50) -- Point(50, 0)
-    val validFold        = Point(100, 100) ~~ Point(200, 200)
-    val otherInvalidFold = Point(10, 0) -- Point(90, 100)
+    given(overlappingShape overlaps coveredLine.a) willReturn true
+    given(overlappingShape overlaps coveredLine.b) willReturn true
+
+    given(overlappingShape overlaps uncoveredLine.a) willReturn false
+    given(overlappingShape overlaps uncoveredLine.b) willReturn false
+
+    // when
+    val overlapsCoveredLine   = paperLayer coversLine coveredLine
+    val overlapsUncoveredLine = paperLayer coversLine uncoveredLine
 
     // then
-    shape coversFold validFold should be(false)
-    shape coversFold invalidFold should be(true)
-    shape coversFold otherInvalidFold should be(true)
+    overlapsCoveredLine should be(true)
+    overlapsUncoveredLine should be(false)
   }
 
-  "The paper layer" should "accurately report which folds are or aren't covered by it (alt.)" in {
+  "Creasing all folds in the fold map" should "leave correct creases creased" in {
     // given
-    val shape = PaperLayer from (
-      Point(50, 0) -- Point(100, 0),
-      Point(0, 50) -- Point(0, 100),
-      Point(25, 25) \/ Point(50, 50),
-      Point(0, 100) ~~ Point(50, 50),
-      Point(50, 50) ~~ Point(100, 0),
-      Point(0, 50) ~~ Point(25, 25),
-      Point(25, 25) ~~ Point(50, 0)
+    val similarLine    = mock[Line]
+    val line           = mock[Line]
+    val dissimilarLine = mock[Line]
+
+    val folds = Map(
+      line           -> MountainFold,
+      similarLine    -> MountainFold,
+      dissimilarLine -> ValleyFold
     )
 
+    given(line alignsWith similarLine) willReturn true
+    given(line alignsWith line) willReturn true
+    given(similarLine alignsWith line) willReturn true
+    given(similarLine alignsWith similarLine) willReturn true
+
+    // when
+    val creasedFolds = folds creaseFoldsAlong line
+
     // then
-    shape coversFold Point(50, 50) /\ Point(0, 0) should be(true)
+    creasedFolds(line) shouldBe CreasedFold
+    creasedFolds(similarLine) shouldBe CreasedFold
+    creasedFolds(dissimilarLine) shouldBe folds(dissimilarLine)
   }
+
+  private def mockFoldMap = mock[Map[Line, FoldType]]
 }

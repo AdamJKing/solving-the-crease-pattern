@@ -1,17 +1,18 @@
 package uk.ac.aber.adk15.controllers.ui
 
-import java.io.{File, PrintWriter, StringWriter}
+import java.io.{PrintWriter, StringWriter}
 import javafx.application.Platform
 
 import com.typesafe.scalalogging.Logger
-import uk.ac.aber.adk15.controllers.ApplicationController
 import uk.ac.aber.adk15.controllers.ApplicationController.{
   ExecutionResult,
   FailedExecution,
   SuccessfulExecution
 }
+import uk.ac.aber.adk15.controllers.{ApplicationController, CreasePatternParser}
 import uk.ac.aber.adk15.model.Config
 import uk.ac.aber.adk15.model.Config.Constants.DefaultConfig
+import uk.ac.aber.adk15.paper.CreasePattern
 import uk.ac.aber.adk15.view.ConfigurationView.showConfigDialog
 import uk.ac.aber.adk15.view.{ApplicationView, ProgressPane, ResultsView}
 
@@ -46,11 +47,12 @@ class ApplicationViewController(private val mainController: ApplicationControlle
                                 private val container: HBox,
                                 private val loadedCreasePatternLabel: Label,
                                 private val progressPane: ProgressPane,
-                                private val menu: Pane) {
+                                private val menu: Pane,
+                                private val creasePatternParser: CreasePatternParser) {
   private val logger = Logger[ApplicationViewController]
 
-  private var creasePatternFile: Option[File] = None
-  private var currentConfig: Config           = DefaultConfig
+  private var creasePattern: Option[CreasePattern] = None
+  private var currentConfig: Config                = DefaultConfig
 
   /**
     * The entry point for the execution of the application.
@@ -69,9 +71,9 @@ class ApplicationViewController(private val mainController: ApplicationControlle
 
     container.children add progressPane
 
-    creasePatternFile match {
-      case Some(creasePattern) =>
-        mainController.execute(creasePattern, currentConfig) onComplete {
+    creasePattern match {
+      case Some(cp) =>
+        mainController.execute(cp, currentConfig) onComplete {
           case Failure(ex) =>
             logger error s"Exception during execution; exception=$ex"
             showExceptionMessage(ex)
@@ -80,10 +82,13 @@ class ApplicationViewController(private val mainController: ApplicationControlle
             logger info s"result=$result"
             handleOutcome(result)
         }
+
       case None =>
         logger info "No crease pattern was loaded."
         showNoCreasePatternLoadedMessage()
     }
+
+    enableAll(menu)
   }
 
   /**
@@ -102,10 +107,10 @@ class ApplicationViewController(private val mainController: ApplicationControlle
     val fileChooser = new FileChooser
     val file        = fileChooser showOpenDialog (ownerWindow = ApplicationView)
 
-    creasePatternFile = Option(file)
+    creasePattern = creasePatternParser parseFile file
 
-    val fileLabel = creasePatternFile map (_.getName)
-    loadedCreasePatternLabel.text = fileLabel getOrElse "Error loading crease file"
+    if (creasePattern.isEmpty) showNoCreasePatternLoadedMessage()
+    else loadedCreasePatternLabel.text = file.getName
   }
 
   /**
@@ -127,6 +132,13 @@ class ApplicationViewController(private val mainController: ApplicationControlle
     * @param pane the element containing the children to be disabled
     */
   def disableAll(pane: Pane): Unit = pane.children foreach (_.disable = true)
+
+  /**
+    * Enables all the elements in the given pane.
+    *
+    * @param pane the element containing the children to be enabled
+    */
+  def enableAll(pane: Pane): Unit = pane.children foreach (_.disable = false)
 
   def showExceptionMessage(ex: Throwable): Unit = {
     new Alert(AlertType.Error) {

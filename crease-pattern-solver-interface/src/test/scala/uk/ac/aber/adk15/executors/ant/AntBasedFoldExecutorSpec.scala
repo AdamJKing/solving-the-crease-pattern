@@ -5,24 +5,22 @@ import org.mockito.Matchers.any
 import org.mockito.Mock
 import org.mockito.Mockito._
 import uk.ac.aber.adk15.CommonAsyncSpec
-import uk.ac.aber.adk15.CommonTestConstants.FlatCreasePattern
 import uk.ac.aber.adk15.geometry.Point
 import uk.ac.aber.adk15.model.Config
-import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
-import uk.ac.aber.adk15.paper.{CreasePattern, Fold}
-import uk.ac.aber.adk15.services.FoldSelectionService
+import uk.ac.aber.adk15.paper.CreasePattern
+import uk.ac.aber.adk15.paper.fold.Fold
+import uk.ac.aber.adk15.paper.fold.PaperEdgeHelpers._
 
 class AntBasedFoldExecutorSpec extends CommonAsyncSpec {
 
-  @Mock private var antTraverser: AntTraverser                 = _
-  @Mock private var foldSelectionService: FoldSelectionService = _
-  @Mock private var config: Config                             = _
+  @Mock private var antTraverser: AntTraverser = _
+  @Mock private var config: Config             = _
 
   private var antBasedFoldExecutor: AntBasedFoldExecutor = _
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    antBasedFoldExecutor = new AntBasedFoldExecutorImpl(antTraverser, foldSelectionService)
+    antBasedFoldExecutor = new AntBasedFoldExecutorImpl(antTraverser)
   }
 
   it should "eventually return the discovered fold order if one exists" in {
@@ -50,7 +48,7 @@ class AntBasedFoldExecutorSpec extends CommonAsyncSpec {
     given(antTraverser traverseTree any[FoldNode]) willReturn mock[Option[List[Fold]]]
 
     // when
-    (antBasedFoldExecutor findFoldOrder (FlatCreasePattern, 8)) map { _ =>
+    (antBasedFoldExecutor findFoldOrder (CreasePattern.empty, 8)) map { _ =>
       //then
       verify(antTraverser, times(numThreads)) traverseTree any[FoldNode]
       succeed

@@ -1,18 +1,18 @@
-package uk.ac.aber.adk15.paper.newapi
+package uk.ac.aber.adk15.paper.fold
 
 import org.mockito.BDDMockito._
 import uk.ac.aber.adk15.CommonFlatSpec
 import uk.ac.aber.adk15.geometry.Line
-import uk.ac.aber.adk15.paper.MountainFold
+import uk.ac.aber.adk15.paper.{CreasePattern, PaperLayer}
 
 class FoldContextSpec extends CommonFlatSpec {
 
   "The fold context for a mountain fold" should "correctly identify fold layers" in {
     // given
-    val creasePattern   = mock[NewCreasePattern]
-    val affectedLayer   = mock[NewPaperLayer]
-    val unaffectedLayer = mock[NewPaperLayer]
-    val fold            = NewFold(mock[Line], MountainFold)
+    val creasePattern   = mock[CreasePattern]
+    val affectedLayer   = mock[PaperLayer]
+    val unaffectedLayer = mock[PaperLayer]
+    val fold            = Fold(mock[Line], MountainFold)
 
     given(creasePattern.layers) willReturn List(affectedLayer, unaffectedLayer)
 
@@ -22,8 +22,9 @@ class FoldContextSpec extends CommonFlatSpec {
     given(unaffectedLayer contains fold) willReturn false
     given(unaffectedLayer coversLine fold.line) willReturn true
 
-    val (layerToFold, layerToLeave) = (mock[NewPaperLayer], mock[NewPaperLayer])
-    given(affectedLayer segmentOnLine fold.line) willReturn ((layerToFold, layerToLeave))
+    val (layerToFold, layerToLeave) = (mock[PaperLayer], mock[PaperLayer])
+    given(affectedLayer segmentOnLine fold.line) willReturn ((Some(layerToFold),
+                                                              Some(layerToLeave)))
     given(layerToFold.surfaceArea) willReturn 10
     given(layerToLeave.surfaceArea) willReturn 20
 
@@ -43,10 +44,10 @@ class FoldContextSpec extends CommonFlatSpec {
 
   "The fold context for a valley fold" should "correctly identify fold layers" in {
     // given
-    val creasePattern   = mock[NewCreasePattern]
-    val affectedLayer   = mock[NewPaperLayer]
-    val unaffectedLayer = mock[NewPaperLayer]
-    val fold            = NewFold(mock[Line], MountainFold)
+    val creasePattern   = mock[CreasePattern]
+    val affectedLayer   = mock[PaperLayer]
+    val unaffectedLayer = mock[PaperLayer]
+    val fold            = Fold(mock[Line], MountainFold)
 
     given(creasePattern.layers) willReturn List(affectedLayer, unaffectedLayer)
 
@@ -56,8 +57,9 @@ class FoldContextSpec extends CommonFlatSpec {
     given(unaffectedLayer contains fold) willReturn false
     given(unaffectedLayer coversLine fold.line) willReturn true
 
-    val (layerToFold, layerToLeave) = (mock[NewPaperLayer], mock[NewPaperLayer])
-    given(affectedLayer segmentOnLine fold.line) willReturn ((layerToFold, layerToLeave))
+    val (layerToFold, layerToLeave) = (mock[PaperLayer], mock[PaperLayer])
+    given(affectedLayer segmentOnLine fold.line) willReturn ((Some(layerToFold),
+                                                              Some(layerToLeave)))
     given(layerToFold.surfaceArea) willReturn 10
     given(layerToLeave.surfaceArea) willReturn 20
 

@@ -1,7 +1,7 @@
 package uk.ac.aber.adk15.view
 
-import uk.ac.aber.adk15.paper.CreasePatternPredef.Helpers._
-import uk.ac.aber.adk15.paper.{CreasePattern, Fold}
+import uk.ac.aber.adk15.paper.CreasePattern
+import uk.ac.aber.adk15.paper.fold.Fold
 import uk.ac.aber.adk15.view.shapes.Model
 
 import scalafx.scene.Scene

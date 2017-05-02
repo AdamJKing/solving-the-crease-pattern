@@ -1,220 +1,127 @@
 package uk.ac.aber.adk15.paper
 
-import com.typesafe.scalalogging.Logger
-import uk.ac.aber.adk15.geometry.Point
+import uk.ac.aber.adk15.geometry.{Line, Point, Polygon, Rectangle}
+import uk.ac.aber.adk15.paper.PaperLayer._
+import uk.ac.aber.adk15.paper.fold._
 
 import scala.Function.tupled
-import scala.annotation.tailrec
-import scala.math.{max, min}
 
-/**
-  * A singular layer that may contain multiple Folds.
-  *
-  * @param folds the folds contained within this layer
-  */
-case class PaperLayer(folds: List[Fold]) {
+case class PaperLayer(private val shapes: Set[Polygon], private val folds: Map[Line, FoldType]) {
+  require(shapes.nonEmpty, "Paper layer must have some content.")
 
-  private val logger = Logger(s"PaperLayer${this.hashCode()}")
+  def segmentOnLine(segmentLine: Line): (Option[PaperLayer], Option[PaperLayer]) = {
+    val (affectedShapes, unaffectedShapes) = shapes partition { shape =>
+      (shape overlaps segmentLine.a) && (shape overlaps segmentLine.b)
+    }
 
-  /**
-    * Separate the layer into two new layers based on a given line.
-    *
-    * When we separate the layers we also crease the line on which the
-    * layer was cut. You can think of this as "ripping" the layer.
-    *
-    * @param fold the edge to use as the basis for the cut
-    * @return the two new layers, as though the original were cut in two
-    */
-  def segmentOnFold(fold: Fold): (PaperLayer, PaperLayer) = {
-    val (start, end) = (fold.start, fold.end)
+    val newShapes = affectedShapes flatMap (shape =>
+      tupled(Set(_: Polygon, _: Polygon))(shape slice segmentLine))
 
-    def isOnLeft(e: Fold)   = (e.points map (_ compareTo (start, end))).sum < 0
-    def isOnRight(e: Fold)  = (e.points map (_ compareTo (start, end))).sum > 0
-    def isOnCentre(e: Fold) = (e.points map (_ compareTo (start, end))).sum == 0
+    @inline
+    def filterByPosition(positionFilter: Double => Boolean) =
+      (newShapes ++ unaffectedShapes) filter (shape => positionFilter(shape compareTo segmentLine))
 
-    val centreLines = (folds filter isOnCentre) map (_.crease)
-    val leftLines   = (folds filter isOnLeft) ++ centreLines
-    val rightLines  = (folds filter isOnRight) ++ centreLines
+    val left  = filterByPosition(_ < 0)
+    val right = filterByPosition(_ > 0)
 
-    (PaperLayer(leftLines), PaperLayer(rightLines))
-  }
-
-  /**
-    * Rotates the layer around an axis given by two arbitrary points.
-    *
-    * Used mainly to simulate a folding action.
-    *
-    * @param axisStart the first point on the axis
-    * @param axisEnd the last point on the axis
-    * @return the rotated layer
-    */
-  def rotateAround(axisStart: Point, axisEnd: Point): PaperLayer = {
-    PaperLayer(folds map {
-      case Fold(start, end, foldType) =>
-        Fold(
-          start reflectedOver (axisStart, axisEnd),
-          end reflectedOver (axisStart, axisEnd),
-          foldType match {
-            case MountainFold  => ValleyFold
-            case ValleyFold    => MountainFold
-            case CreasedFold   => CreasedFold
-            case PaperBoundary => PaperBoundary
-          }
-        )
+    val leftFolds = folds filter tupled((line, _) => {
+      line map { (a, b) =>
+        left exists (shape => (shape contains a) && (shape contains b))
+      }
     })
+
+    val rightFolds = folds filter tupled((line, _) =>
+      line map { (a, b) =>
+        right exists { shape =>
+          (shape contains a) && (shape contains b)
+        }
+    })
+
+    val creasedLeftFolds  = leftFolds creaseFoldsAlong segmentLine
+    val creasedRightFolds = rightFolds creaseFoldsAlong segmentLine
+
+    val leftLayer  = if (left.nonEmpty) Some(PaperLayer(left, creasedLeftFolds)) else None
+    val rightLayer = if (right.nonEmpty) Some(PaperLayer(right, creasedRightFolds)) else None
+
+    (leftLayer, rightLayer)
   }
 
-  /**
-    * Merges two layers together to form one layer. It will fail
-    * if the layers cannot be merged without overlapping. This is
-    * because overlapping paper must be on another layer.
-    *
-    * @param otherLayer the layer to merge with
-    * @return an optional merged paper layer, with none if the merge failed
-    */
+  def rotateAround(rotationLine: Line): PaperLayer = {
+    val rotatedShapes = shapes map (_ flatMap (_ reflectedOver rotationLine))
+    val rotatedFolds = folds map tupled((line, foldType) =>
+      (line mapValues (_ reflectedOver rotationLine)) -> (foldType match {
+        case MountainFold    => ValleyFold
+        case ValleyFold      => MountainFold
+        case other: FoldType => other
+      }))
+
+    new PaperLayer(rotatedShapes, rotatedFolds)
+  }
+
   def mergeWith(otherLayer: PaperLayer): Option[PaperLayer] = {
-    val canBeAddedSafely =
-      !(otherLayer.folds.exists(coversFold(_, failsOnEdge = false))
-        && folds.exists(otherLayer coversFold (_, failsOnEdge = false)))
-
-    val currentLayerPoints = for (fold <- folds) yield (fold.start, fold.end)
-
-    val allOnEdge = otherLayer.folds forall (fold =>
-      isOnEdge(fold.start, currentLayerPoints) || isOnEdge(fold.end, currentLayerPoints))
+    val canBeAddedSafely = !(shapes exists (shape => otherLayer.shapes exists (_ overlaps shape)))
+    val allOnEdge = otherLayer.shapes forall (shape =>
+      shapes exists (s => s.points forall shape.isOnEdge))
 
     if (canBeAddedSafely && !allOnEdge) {
-      logger debug s"Layers can be combined (layer=$this combined with otherLayer=$otherLayer)"
-      Some(PaperLayer(folds ++ otherLayer.folds))
+      Some(PaperLayer(shapes ++ otherLayer.shapes, folds ++ otherLayer.folds))
     } else None
   }
 
-  def coversFold(foldToTest: Fold, failsOnEdge: Boolean = true): Boolean = {
-    // http://geomalgorithms.com/a03-_inclusion.html
-    @tailrec
-    def findWindingNumber(p: Point, polygon: List[Point], startWn: Int = 0): Int = {
-      polygon match {
-        case a :: b :: rest =>
-          if (a.y <= p.y && b.y > p.y && (p compareTo (a, b)) > 0)
-            findWindingNumber(p, b :: rest, startWn + 1)
-          else if (b.y <= p.y && (p compareTo (a, b)) < 0)
-            findWindingNumber(p, b :: rest, startWn - 1)
-          else
-            findWindingNumber(p, b :: rest, startWn)
+  def coversLine(line: Line): Boolean =
+    shapes exists (shape => line map ((a, b) => coversPoint(a) || coversPoint(b)))
 
-        case _ => startWn
-      }
-    }
+  def coversPoint(point: Point): Boolean =
+    shapes exists (shape => (shape overlaps point) && !(shape isOnEdge point))
 
-    def isInBoundingBox(p: Point, points: List[(Point, Point)]) = {
-      val sortedValuesX = (points flatMap tupled((a, b) => List(a.x, b.x))).sorted
-      val sortedValuesY = (points flatMap tupled((a, b) => List(a.y, b.y))).sorted
+  def isOnEdge(point: Point): Boolean = shapes exists (_ isOnEdge point)
 
-      val (xMax, xMin) = (sortedValuesX.last, sortedValuesX.head)
-      val (yMax, yMin) = (sortedValuesY.last, sortedValuesY.head)
+  def surfaceArea: Double = (shapes map (_.surfaceArea)).sum
 
-      (p.x <= xMax && p.x >= xMin) && (p.y <= yMax && p.y >= yMin)
-    }
+  def boundingBox: Rectangle = (shapes map (_.boundingBox)) reduceLeft (_ combineWith _)
 
-    val layerPoints = for (fold <- (creasedFolds ++ paperBoundaries).toList)
-      yield (fold.start, fold.end)
+  def contains(foldLine: Line): Boolean = folds contains foldLine
+  def contains(fold: Fold): Boolean =
+    contains(fold.line) && (folds get fold.line contains fold.foldType)
 
-    if (((creasedFolds ++ paperBoundaries) contains foldToTest) || (isOnEdge(
-          foldToTest.start,
-          layerPoints) ^ isOnEdge(foldToTest.end, layerPoints))) {
-      val edgeCheckedFold = accountForEdges(foldToTest, layerPoints)
+  def exists(predicate: (Fold) => Boolean): Boolean = (foldable ++ unfoldable) exists predicate
 
-      edgeCheckedFold.points exists (pointOnFold => {
-        if (isInBoundingBox(pointOnFold, layerPoints)) {
-          val polygon = layerPoints map (_._1)
-          findWindingNumber(pointOnFold, polygon :+ polygon.head) != 0
-        } else false
-      })
-    } else {
-      isOnEdge(foldToTest.start, layerPoints) && isOnEdge(foldToTest.end, layerPoints) && failsOnEdge
-    }
+  def mountainFolds: Set[Fold]   = extractFolds(MountainFold)
+  def valleyFolds: Set[Fold]     = extractFolds(ValleyFold)
+  def creasedFolds: Set[Fold]    = extractFolds(CreasedFold)
+  def paperBoundaries: Set[Fold] = extractFolds(PaperBoundary)
+
+  def foldable: Set[Fold]   = mountainFolds ++ valleyFolds
+  def unfoldable: Set[Fold] = creasedFolds ++ paperBoundaries
+
+  override def equals(other: Any): Boolean = other match {
+    case PaperLayer(otherShapes, otherFolds) => shapes == otherShapes && folds == otherFolds
+    case _                                   => false
   }
 
-  def surfaceArea: Double = {
-    val points = ((creasedFolds ++ paperBoundaries) map (_.start)).toList
+  override def hashCode(): Int = 17 * (31 + shapes.hashCode()) * (31 + folds.hashCode())
 
-    // define a way of ordering points that works for our calculation
-    implicit val pointOrder = Ordering by ((p: Point) => p.x + p.y)
-
-    // run a sliding window over the list of points
-    // we take three points at a time, calculating the area of that triangle
-    // and summing them to find the total area
-    (0.0 /: (points.sorted sliding 3))((totalArea, triangle) =>
-      totalArea + (triangle match {
-        case x :: y :: z :: _ => calculateAreaOfTriangle(x, y, z)
-        case _                => 0.0
-      }))
+  override def toString: String = {
+    folds map tupled((line, foldType) => line map ((a, b) => s"$a $foldType $b")) mkString "\n"
   }
 
-  def mountainFolds: Set[Fold]   = (folds filter (_.foldType == MountainFold)).toSet
-  def valleyFolds: Set[Fold]     = (folds filter (_.foldType == ValleyFold)).toSet
-  def creasedFolds: Set[Fold]    = (folds filter (_.foldType == CreasedFold)).toSet
-  def paperBoundaries: Set[Fold] = (folds filter (_.foldType == PaperBoundary)).toSet
-
-  def contains(fold: Fold): Boolean            = folds contains fold
-  def exists(test: (Fold) => Boolean): Boolean = folds exists test
-
-  override def equals(that: Any): Boolean = that match {
-    case PaperLayer(otherFolds) => folds.toSet == otherFolds.toSet
-    case _                      => false
-  }
-
-  override def hashCode(): Int = folds.toSet.hashCode()
-
-  override def toString: String = s"${folds.mkString("\n\t")}"
-
-  private def isOnEdge(p: Point, polygon: List[(Point, Point)]) = {
-    polygon exists tupled((a: Point, b: Point) => {
-      val isInRangeX        = (p.x >= min(a.x, b.x)) && (p.x <= max(a.x, b.x))
-      val isInRangeY        = (p.y >= min(a.y, b.y)) && (p.y <= max(a.y, b.y))
-      val equalsEitherPoint = p == a || p == b
-      val isOnSameLine = {
-        (p.x == a.x && p.x == b.x && a.x == b.x) ||
-        (p.y == a.y && p.y == b.y && a.y == b.y) ||
-        (p gradientTo a) == (p gradientTo b)
-      }
-
-      (isInRangeX && isInRangeY) && {
-        if (equalsEitherPoint) true
-        else isOnSameLine
-      }
-    })
-  }
-
-  private def accountForEdges(foldToTest: Fold, layerPoints: List[(Point, Point)]): Fold = {
-    val distinctPoints = layerPoints flatMap tupled(Set(_, _))
-    def average(value: Point => Double) =
-      (0.0 /: distinctPoints)(_ + value(_)) / distinctPoints.length
-
-    val centreOfMass = Point(average(_.x), average(_.y))
-
-    def movePointAwayFromCentreOfMass(point: Point) = {
-      val alteredX = point.x - math.signum(centreOfMass.x - point.x)
-      val alteredY = point.y - math.signum(centreOfMass.y - point.y)
-
-      Point(alteredX, alteredY)
-    }
-
-    foldToTest mapPoints { point =>
-      if (isOnEdge(point, layerPoints))
-        movePointAwayFromCentreOfMass(point)
-      else
-        point
-    }
-  }
-
-  private def calculateAreaOfTriangle(x: Point, y: Point, z: Point) = {
-    // http://www.mathopenref.com/coordtrianglearea.html
-    def f(a: Point, b: Point, c: Point) = a.x * (b.y - c.y)
-    math.abs(f(x, y, z) + f(y, z, x) + f(z, x, y)) / 2
-  }
-
+  private def extractFolds(foldType: FoldType) =
+    (folds withFilter (_._2 == foldType) map tupled(Fold)).toSet
 }
 
 object PaperLayer {
-  def from(fold: Fold, folds: Fold*) = PaperLayer(fold +: folds.toList)
+  def apply(folds: Fold*) = new PaperLayer(
+    Set(new Polygon(folds.toSet flatMap { (fold: Fold) =>
+      val points = fold.line.points
+      Set(points._1, points._2)
+
+    })),
+    (for (fold <- folds) yield fold.line -> fold.foldType).toMap
+  )
+
+  implicit final class FoldMapOps(private val self: Map[Line, FoldType]) extends AnyVal {
+    def creaseFoldsAlong(foldLine: Line): Map[Line, FoldType] =
+      self map tupled((line, foldType) =>
+        if (line alignsWith foldLine) (line, CreasedFold) else (line, foldType))
+  }
 }

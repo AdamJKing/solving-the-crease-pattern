@@ -2,8 +2,8 @@ package uk.ac.aber.adk15.executors.ant
 
 import com.google.inject.Inject
 import com.typesafe.scalalogging.Logger
-import uk.ac.aber.adk15.paper.{CreasePattern, Fold}
-import uk.ac.aber.adk15.services.FoldSelectionService
+import uk.ac.aber.adk15.paper.CreasePattern
+import uk.ac.aber.adk15.paper.fold.Fold
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -12,9 +12,7 @@ trait AntBasedFoldExecutor {
       implicit executionContext: ExecutionContext): Future[Option[List[Fold]]]
 }
 
-class AntBasedFoldExecutorImpl @Inject()(antTraverser: AntTraverser,
-                                         foldSelectionService: FoldSelectionService)
-    extends AntBasedFoldExecutor {
+class AntBasedFoldExecutorImpl @Inject()(antTraverser: AntTraverser) extends AntBasedFoldExecutor {
 
   private val logger = Logger[AntBasedFoldExecutorImpl]
 
@@ -23,7 +21,7 @@ class AntBasedFoldExecutorImpl @Inject()(antTraverser: AntTraverser,
   override def findFoldOrder(creasePattern: CreasePattern, maxAnts: Int)(
       implicit executionContext: ExecutionContext): PossibleFoldOrder = {
 
-    val operationTreeRoot = FoldNode(creasePattern, None)(foldSelectionService)
+    val operationTreeRoot = FoldNode(creasePattern, None)
 
     logger info s"Starting ant colony with $maxAnts ants."
     Future.firstCompletedOf {

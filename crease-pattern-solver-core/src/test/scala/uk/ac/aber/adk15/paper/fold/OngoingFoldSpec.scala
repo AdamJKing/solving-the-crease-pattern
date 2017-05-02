@@ -1,10 +1,11 @@
-package uk.ac.aber.adk15.paper.newapi
+package uk.ac.aber.adk15.paper.fold
 
 import org.mockito.BDDMockito._
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import uk.ac.aber.adk15.CommonFlatSpec
 import uk.ac.aber.adk15.geometry.Line
+import uk.ac.aber.adk15.paper.{CreasePattern, PaperLayer}
 
 class OngoingFoldSpec extends CommonFlatSpec {
 
@@ -15,8 +16,8 @@ class OngoingFoldSpec extends CommonFlatSpec {
   "Creasing an on-going valley fold" should "correctly flatten the model" in {
     // given
     val foldContext         = mock[FoldContext]
-    val expectedTopLayer    = mock[NewPaperLayer]
-    val expectedBottomLayer = mock[NewPaperLayer]
+    val expectedTopLayer    = mock[PaperLayer]
+    val expectedBottomLayer = mock[PaperLayer]
     val foldLine            = mock[Line]
 
     given(expectedTopLayer rotateAround foldLine) willReturn expectedTopLayer
@@ -31,7 +32,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     // then
     verify(expectedTopLayer) rotateAround foldLine
     creasePattern shouldBe (
-      NewCreasePattern from (
+      CreasePattern from (
         expectedTopLayer,
         expectedBottomLayer
       )
@@ -41,8 +42,8 @@ class OngoingFoldSpec extends CommonFlatSpec {
   "Creasing an on-going mountain fold" should "correctly flatten the model" in {
     // given
     val foldContext         = mock[FoldContext]
-    val expectedTopLayer    = mock[NewPaperLayer]
-    val expectedBottomLayer = mock[NewPaperLayer]
+    val expectedTopLayer    = mock[PaperLayer]
+    val expectedBottomLayer = mock[PaperLayer]
     val foldLine            = mock[Line]
 
     given(expectedBottomLayer rotateAround foldLine) willReturn expectedBottomLayer
@@ -58,7 +59,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     // then
     verify(expectedBottomLayer) rotateAround foldLine
     creasePattern shouldBe (
-      NewCreasePattern from (
+      CreasePattern from (
         expectedTopLayer,
         expectedBottomLayer
       )
@@ -68,9 +69,9 @@ class OngoingFoldSpec extends CommonFlatSpec {
   "Creasing an on-going valley fold" should "correctly flatten the model with some unaffected layers" in {
     // given
     val foldContext             = mock[FoldContext]
-    val expectedTopLayer        = mock[NewPaperLayer]("top")
-    val expectedBottomLayer     = mock[NewPaperLayer]("bottom")
-    val expectedUnaffectedLayer = mock[NewPaperLayer]("unaffected")
+    val expectedTopLayer        = mock[PaperLayer]("top")
+    val expectedBottomLayer     = mock[PaperLayer]("bottom")
+    val expectedUnaffectedLayer = mock[PaperLayer]("unaffected")
     val foldLine                = mock[Line]
 
     given(expectedTopLayer rotateAround foldLine) willReturn expectedTopLayer
@@ -89,7 +90,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     // then
     verify(expectedTopLayer) rotateAround foldLine
     creasePattern shouldBe (
-      NewCreasePattern from (
+      CreasePattern from (
         expectedTopLayer,
         expectedBottomLayer,
         expectedUnaffectedLayer
@@ -100,9 +101,9 @@ class OngoingFoldSpec extends CommonFlatSpec {
   "Creasing an on-going mountain fold" should "correctly flatten the model with some unaffected layers" in {
     // given
     val foldContext             = mock[FoldContext]
-    val expectedTopLayer        = mock[NewPaperLayer]
-    val expectedBottomLayer     = mock[NewPaperLayer]
-    val expectedUnaffectedLayer = mock[NewPaperLayer]
+    val expectedTopLayer        = mock[PaperLayer]
+    val expectedBottomLayer     = mock[PaperLayer]
+    val expectedUnaffectedLayer = mock[PaperLayer]
     val foldLine                = mock[Line]
 
     given(expectedBottomLayer rotateAround foldLine) willReturn expectedBottomLayer
@@ -121,7 +122,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     // then
     verify(expectedBottomLayer) rotateAround foldLine
     creasePattern shouldBe (
-      NewCreasePattern from (
+      CreasePattern from (
         expectedUnaffectedLayer,
         expectedTopLayer,
         expectedBottomLayer
@@ -132,12 +133,12 @@ class OngoingFoldSpec extends CommonFlatSpec {
   "Creasing an on-going valley fold" should "correctly flatten the model with some merges" in {
     // given
     val foldContext         = mock[FoldContext]
-    val expectedTopLayer    = mock[NewPaperLayer]
-    val expectedBottomLayer = mock[NewPaperLayer]
+    val expectedTopLayer    = mock[PaperLayer]
+    val expectedBottomLayer = mock[PaperLayer]
     val foldLine            = mock[Line]
 
-    val unaffectedMergeableLayer = mock[NewPaperLayer]
-    val mergedLayer              = mock[NewPaperLayer]
+    val unaffectedMergeableLayer = mock[PaperLayer]
+    val mergedLayer              = mock[PaperLayer]
 
     given(expectedTopLayer rotateAround foldLine) willReturn expectedTopLayer
     given(foldContext.foldableLayers) willReturn Map(1   -> expectedTopLayer)
@@ -157,7 +158,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     // then
     verify(expectedTopLayer) rotateAround foldLine
     creasePattern shouldBe (
-      NewCreasePattern from (
+      CreasePattern from (
         mergedLayer,
         expectedBottomLayer
       )
@@ -167,12 +168,12 @@ class OngoingFoldSpec extends CommonFlatSpec {
   "Creasing an on-going mountain fold" should "correctly flatten the model with some merges" in {
     // given
     val foldContext         = mock[FoldContext]
-    val expectedTopLayer    = mock[NewPaperLayer]("top layer")
-    val expectedBottomLayer = mock[NewPaperLayer]("bottom layer")
+    val expectedTopLayer    = mock[PaperLayer]("top layer")
+    val expectedBottomLayer = mock[PaperLayer]("bottom layer")
     val foldLine            = mock[Line]
 
-    val unaffectedMergeableLayer = mock[NewPaperLayer]
-    val mergedLayer              = mock[NewPaperLayer]("merged layer")
+    val unaffectedMergeableLayer = mock[PaperLayer]
+    val mergedLayer              = mock[PaperLayer]("merged layer")
 
     given(expectedBottomLayer rotateAround foldLine) willReturn expectedBottomLayer
     given(foldContext.foldableLayers) willReturn Map(0   -> expectedBottomLayer)
@@ -192,7 +193,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     // then
     verify(expectedBottomLayer) rotateAround foldLine
     creasePattern shouldBe (
-      NewCreasePattern from (
+      CreasePattern from (
         expectedTopLayer,
         mergedLayer
       )
@@ -205,14 +206,14 @@ class OngoingFoldSpec extends CommonFlatSpec {
     val foldLine    = mock[Line]
 
     val foldableLayers = {
-      for (i <- 5 until 10) yield i -> mock[NewPaperLayer]("foldable")
+      for (i <- 5 until 10) yield i -> mock[PaperLayer]("foldable")
     }.toMap
 
     val unaffectedLayers = {
-      for (i <- 0 until 6) yield i -> mock[NewPaperLayer]("unaffected")
+      for (i <- 0 until 6) yield i -> mock[PaperLayer]("unaffected")
     }.toMap
 
-    val mergedLayers = List.fill(5)(mock[NewPaperLayer]("merged"))
+    val mergedLayers = List.fill(5)(mock[PaperLayer]("merged"))
 
     given(foldContext.foldableLayers) willReturn foldableLayers
     given(foldContext.unaffectedLayers) willReturn unaffectedLayers
@@ -220,7 +221,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     given(foldContext.foldAbove) willReturn true
 
     unaffectedLayers.values foreach (layer =>
-      given(layer mergeWith any[NewPaperLayer]) willReturn None)
+      given(layer mergeWith any[PaperLayer]) willReturn None)
 
     foldableLayers.values foreach (layer => given(layer rotateAround foldLine) willReturn layer)
 
@@ -234,7 +235,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     // then
     foldableLayers.values foreach (layer => verify(layer) rotateAround foldLine)
     creasePattern shouldBe (
-      NewCreasePattern from (
+      CreasePattern from (
         mergedLayers :+ unaffectedLayers(5): _*
       )
     )
@@ -246,14 +247,14 @@ class OngoingFoldSpec extends CommonFlatSpec {
     val foldLine    = mock[Line]
 
     val foldableLayers = {
-      for (i <- 0 until 5) yield i -> mock[NewPaperLayer](s"foldable $i")
+      for (i <- 0 until 5) yield i -> mock[PaperLayer](s"foldable $i")
     }.toMap
 
     val unaffectedLayers = {
-      for (i <- 4 until 10) yield i -> mock[NewPaperLayer](s"unaffected $i")
+      for (i <- 4 until 10) yield i -> mock[PaperLayer](s"unaffected $i")
     }.toMap
 
-    val mergedLayers = List.fill(5)(mock[NewPaperLayer]("merged"))
+    val mergedLayers = List.fill(5)(mock[PaperLayer]("merged"))
 
     given(foldContext.foldableLayers) willReturn foldableLayers
     given(foldContext.unaffectedLayers) willReturn unaffectedLayers
@@ -261,7 +262,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     given(foldContext.foldAbove) willReturn false
 
     unaffectedLayers.values foreach (layer =>
-      given(layer mergeWith any[NewPaperLayer]) willReturn None)
+      given(layer mergeWith any[PaperLayer]) willReturn None)
 
     foldableLayers.values foreach (layer => given(layer rotateAround foldLine) willReturn layer)
 
@@ -276,7 +277,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     // then
     foldableLayers.values foreach (layer => verify(layer) rotateAround foldLine)
     creasePattern shouldBe (
-      NewCreasePattern from (
+      CreasePattern from (
         unaffectedLayers(4) +: mergedLayers: _*
       )
     )
