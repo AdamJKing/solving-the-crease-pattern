@@ -1,16 +1,10 @@
 package uk.ac.aber.adk15.executors.ant
 
-import uk.ac.aber.adk15.paper.CreasePatternPredef.Helpers._
-import uk.ac.aber.adk15.paper.{CreasePattern, Fold}
-import uk.ac.aber.adk15.services.FoldSelectionService
+import uk.ac.aber.adk15.paper.CreasePattern
+import uk.ac.aber.adk15.paper.fold.Fold
 
-case class FoldNode(model: CreasePattern, fold: Option[Fold])(
-    implicit val foldSelectionService: FoldSelectionService) {
-
+case class FoldNode(model: CreasePattern, fold: Option[Fold]) {
   lazy val children: Set[FoldNode] = {
-    foldSelectionService getAvailableOperations model map (childFold =>
-      FoldNode(model <~~ childFold, Some(childFold)))
+    model.availableFolds map (childFold => FoldNode(model <~~ childFold, Some(childFold)))
   }
-
-  def allFoldsAreComplete(): Boolean = model.remainingFolds.isEmpty
 }

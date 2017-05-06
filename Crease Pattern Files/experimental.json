@@ -1,0 +1,28 @@
+{
+  "paperLayers": [
+    {
+      "folds": [
+        { "line": { "a": { "x":  0, "y":  0 }, "b": { "x":  15, "y":  0 } }, "foldType": "PaperBoundary" },
+        { "line": { "a": { "x":  15, "y":  0 }, "b": { "x":  60, "y":  0 } }, "foldType": "PaperBoundary" },
+        { "line": { "a": { "x":  60, "y":  0 }, "b": { "x":  100, "y":  0 } }, "foldType": "PaperBoundary" },
+        { "line": { "a": { "x":  100, "y":  0 }, "b": { "x":  100, "y":  40 } }, "foldType": "PaperBoundary" },
+        { "line": { "a": { "x":  100, "y":  40 }, "b": { "x":  100, "y":  75 } }, "foldType": "PaperBoundary" },
+        { "line": { "a": { "x":  100, "y":  75 }, "b": { "x":  100, "y":  100 } }, "foldType": "PaperBoundary" },
+        { "line": { "a": { "x":  100, "y":  100 }, "b": { "x":  75, "y":  100 } }, "foldType": "PaperBoundary" },
+        { "line": { "a": { "x":  75, "y":  100 }, "b": { "x":  40, "y":  100 } }, "foldType": "PaperBoundary" },
+        { "line": { "a": { "x":  40, "y":  100 }, "b": { "x":  0, "y":  100 } }, "foldType": "PaperBoundary" },
+        { "line": { "a": { "x":  0, "y":  100 }, "b": { "x":  0, "y":  60 } }, "foldType": "PaperBoundary" },
+        { "line": { "a": { "x":  0, "y":  60 }, "b": { "x":  0, "y":  15 } }, "foldType": "PaperBoundary" },
+        { "line": { "a": { "x":  0, "y":  15 }, "b": { "x":  0, "y":  0 } }, "foldType": "PaperBoundary" },
+        { "line": { "a": { "x":  0, "y":  100 }, "b": { "x":  50, "y":  50 } }, "foldType": "MountainFold" },
+        { "line": { "a": { "x":  50, "y":  50 }, "b": { "x":  100, "y":  0 } }, "foldType": "MountainFold" },
+        { "line": { "a": { "x":  40, "y":  100 }, "b": { "x":  50, "y":  50 } }, "foldType": "MountainFold" },
+        { "line": { "a": { "x":  75, "y":  100 }, "b": { "x":  100, "y":  75 } }, "foldType": "MountainFold" },
+        { "line": { "a": { "x":  50, "y":  50 }, "b": { "x":  100, "y":  40 } }, "foldType": "MountainFold" },
+        { "line": { "a": { "x":  60, "y":  0 }, "b": { "x":  50, "y":  50 } }, "foldType": "ValleyFold" },
+        { "line": { "a": { "x":  50, "y":  50 }, "b": { "x":  0, "y":  60 } }, "foldType": "ValleyFold" },
+        { "line": { "a": { "x":  0, "y":  15 }, "b": { "x":  15, "y":  0 } }, "foldType": "ValleyFold" }
+      ]
+    }
+  ]
+}

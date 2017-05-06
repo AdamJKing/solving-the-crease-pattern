@@ -12,6 +12,10 @@ import scalafx.scene.Scene
 import scalafxml.core.{ControllerDependencyResolver, FXMLView}
 import scalafxml.guice.GuiceDependencyResolver
 
+/**
+  * Entry point for the application, loads the relevant FXML files
+  * and starts the injection process.
+  */
 object Application extends JFXApp {
 
   implicit val injector: Injector = Guice createInjector new ApplicationModule

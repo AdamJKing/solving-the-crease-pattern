@@ -1,7 +1,7 @@
 package uk.ac.aber.adk15.view
 
-import uk.ac.aber.adk15.paper.CreasePatternPredef.Helpers._
-import uk.ac.aber.adk15.paper.{CreasePattern, Fold}
+import uk.ac.aber.adk15.paper.CreasePattern
+import uk.ac.aber.adk15.paper.fold.Fold
 import uk.ac.aber.adk15.view.shapes.Model
 
 import scalafx.scene.Scene
@@ -10,6 +10,12 @@ import scalafx.scene.control.{ContentDisplay, ListCell, ListView}
 import scalafx.scene.layout.Pane
 import scalafx.stage.Stage
 
+/**
+  * Displays the discovered fold-order to the user
+  *
+  * @param foldOrder the discovered fold-order
+  * @param originalPattern the pattern to apply the fold-order to
+  */
 class ResultsView(foldOrder: Seq[Fold], originalPattern: CreasePattern) extends Stage {
 
   private val CanvasSize = 200.0
@@ -18,6 +24,7 @@ class ResultsView(foldOrder: Seq[Fold], originalPattern: CreasePattern) extends 
 
   scene = new Scene {
     content = {
+      // we generate the steps by applying the folds and drawing the model at each stage
       val children = foldOrder.inits map (folds => (originalPattern /: folds)(_ <~~ _))
 
       new ListView[CreasePattern](children.toSeq.reverse) {
@@ -27,6 +34,9 @@ class ResultsView(foldOrder: Seq[Fold], originalPattern: CreasePattern) extends 
     }
   }
 
+  /**
+    * Specialised cell for the JFX list view
+    */
   private class CanvasCell extends ListCell[CreasePattern] {
     private val canvas      = new Canvas
     private implicit val gc = canvas.graphicsContext2D

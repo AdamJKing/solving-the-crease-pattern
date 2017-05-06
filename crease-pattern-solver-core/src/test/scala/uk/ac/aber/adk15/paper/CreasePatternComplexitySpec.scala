@@ -1,116 +1,58 @@
 package uk.ac.aber.adk15.paper
 
 import uk.ac.aber.adk15.CommonFlatSpec
-import uk.ac.aber.adk15.CommonTestConstants.ModelConstants._
-import uk.ac.aber.adk15.paper.CreasePatternPredef.Helpers._
-import uk.ac.aber.adk15.paper.PaperEdgeHelpers._
+import uk.ac.aber.adk15.paper.constants.FoldedModels._
+import uk.ac.aber.adk15.paper.constants.UnfoldedCreasePatterns._
 
+/**
+  * [[CreasePattern]] complexity tests, used to validate
+  * that the crease-pattern folds correctly with 'real' data.
+  */
 class CreasePatternComplexitySpec extends CommonFlatSpec {
-
-  "The crease pattern" should "be capable of being folded" in {
-
+  "A simple crease pattern" should "fold accurately and correctly" in {
     // given
-    val creasePattern = FlatCreasePattern
+    val creasePattern = SimpleCreasePattern
 
     // when
-    val foldedCreasePattern = creasePattern <~~ Point(0, 100) /\ Point(100, 0)
+    val creasedModel = creasePattern <~~ SimpleFold
 
     // then
-    foldedCreasePattern should be(
-      CreasePattern(List(
-        PaperLayer(
-          List(
-            Point(0, 100) ~~ Point(100, 0),
-            Point(100, 100) -- Point(0, 100),
-            Point(100, 0) -- Point(100, 100)
-          )),
-        PaperLayer(
-          List(
-            Point(0, 100) ~~ Point(100, 0),
-            Point(100, 100) -- Point(0, 100),
-            Point(100, 0) -- Point(100, 100)
-          ))
-      )))
+    creasedModel shouldBe SimpleFoldedModel
   }
 
-  "A crease pattern with multiple layered folds" should "be fold-able" in {
-    // when
-    val creases = List(Point(50, 50) \/ Point(100, 100),
-                       Point(50, 50) \/ Point(0, 100),
-                       Point(0, 50) /\ Point(25, 25))
+  "A medium complexity crease pattern" should "fold accurately and correctly" in {
+    // given
+    val creasePattern = MediumComplexityCreasePattern
 
-    val foldedCreasePattern =
-      (creases foldLeft MultiLayeredUnfoldedPaper)(_ <~~ _)
+    // when
+    val creasedModel = (creasePattern /: MediumFolds)(_ <~~ _)
 
     // then
-    withClue(foldedCreasePattern)(foldedCreasePattern.size should be(6))
-    foldedCreasePattern should be(MultiLayeredFoldedPaper)
+    creasedModel shouldBe MediumComplexityModel
   }
 
-  "A crease pattern with multiple layered folds" should "be fold-able regardless of direction" in {
+  "When recognising the folds of a medium complexity crease pattern" should "correctly recognise all folds" in {
     // given
-    val RotatedMultiLayeredUnfoldedPaper: CreasePattern = CreasePattern from (
-      PaperLayer from (
-        Point(0, 0) -- Point(100, 0),
-        Point(100, 0) -- Point(100, 100),
-        Point(100, 100) -- Point(50, 100),
-        Point(50, 100) -- Point(0, 100),
-        Point(0, 100) -- Point(0, 50),
-        Point(0, 50) -- Point(0, 0),
-        Point(0, 0) /\ Point(50, 50),
-        Point(50, 50) \/ Point(100, 100),
-        Point(0, 50) \/ Point(25, 75),
-        Point(25, 75) \/ Point(50, 50),
-        Point(0, 100) \/ Point(25, 75),
-        Point(50, 50) \/ Point(100, 0),
-        Point(25, 75) /\ Point(50, 100)
-      )
-    )
+    val creasePattern = MediumComplexityCreasePattern
 
     // when
-    val creases = List(Point(0, 100) \/ Point(100, 0),
-                       Point(100, 100) \/ Point(50, 50),
-                       Point(100, 50) \/ Point(75, 25))
-
-    val foldedCreasePattern =
-      (creases foldLeft RotatedMultiLayeredUnfoldedPaper)(_ <~~ _)
+    val stages = MediumFolds.inits.toList map (folds => (creasePattern /: folds)(_ <~~ _))
 
     // then
-    withClue(foldedCreasePattern)(foldedCreasePattern.size should be(6))
-    foldedCreasePattern should be(
-      CreasePattern(List(
-        PaperLayer(
-          List(Point(50.0, 50.0) -- Point(100.0, 50.0),
-               Point(50.0, 50.0) ~~ Point(75.0, 25.0),
-               Point(100.0, 50.0) ~~ Point(75.0, 25.0))
-        ),
-        PaperLayer(
-          List(Point(100.0, 50.0) -- Point(50.0, 50.0),
-               Point(50.0, 50.0) ~~ Point(75.0, 25.0),
-               Point(75.0, 25.0) ~~ Point(100.0, 50.0))
-        ),
-        PaperLayer(
-          List(Point(100.0, 50.0) -- Point(100.0, 100.0),
-               Point(75.0, 25.0) ~~ Point(50.0, 50.0),
-               Point(100.0, 100.0) ~~ Point(50.0, 50.0),
-               Point(100.0, 50.0) ~~ Point(75.0, 25.0))
-        ),
-        PaperLayer(
-          List(Point(100.0, 100.0) -- Point(100.0, 50.0),
-               Point(75.0, 25.0) ~~ Point(50.0, 50.0),
-               Point(50.0, 50.0) ~~ Point(100.0, 100.0),
-               Point(75.0, 25.0) ~~ Point(100.0, 50.0))
-        ),
-        PaperLayer(
-          List(Point(100.0, 100.0) -- Point(100.0, 0.0),
-               Point(50.0, 50.0) ~~ Point(100.0, 0.0),
-               Point(100.0, 100.0) ~~ Point(50.0, 50.0))
-        ),
-        PaperLayer(
-          List(Point(100.0, 0.0) -- Point(100.0, 100.0),
-               Point(50.0, 50.0) ~~ Point(100.0, 0.0),
-               Point(50.0, 50.0) ~~ Point(100.0, 100.0))
-        )
-      )))
+    stages.last.availableFolds should contain(MediumFolds.head)
+    stages(2).availableFolds should contain(MediumFolds(1))
+    stages(1).availableFolds should contain(MediumFolds(2))
+    stages.head.availableFolds should be(empty)
+  }
+
+  "Alternative: A medium complexity crease pattern" should "fold accurately and correctly" in {
+    // given
+    val creasePattern = MediumComplexityCreasePattern
+
+    // when
+    val creasedModel = (creasePattern /: AlternativeMediumFolds)(_ <~~ _)
+
+    // then
+    creasedModel shouldBe AlternativeMediumComplexityModel
   }
 }

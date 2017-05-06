@@ -4,7 +4,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import com.google.inject.Inject
 import com.typesafe.scalalogging.Logger
-import uk.ac.aber.adk15.paper.{CreasePattern, Fold}
+import uk.ac.aber.adk15.paper.CreasePattern
+import uk.ac.aber.adk15.paper.fold.Fold
 import uk.ac.aber.adk15.view.{EventBus, ObservableEvent}
 
 import scala.annotation.tailrec
@@ -52,10 +53,15 @@ class AntTraverserImpl @Inject()(diceRollService: DiceRollService,
   protected final def traverse(currentNode: FoldNode,
                                visitedNodes: List[FoldNode]): Option[List[Fold]] = {
 
+    // Arbitrarily slow down the execution of the algorithm
+    // this should really be a configuration option
+    // !! added for demonstrative purposes !!
+    Thread.sleep(1000L)
+
     val isEndState = currentNode.children.isEmpty
 
     if (isEndState) {
-      if (currentNode.allFoldsAreComplete()) {
+      if (!currentNode.model.hasRemainingFolds) {
         eventBus.onSuccess(AntTraversalEvent(currentNode.model))
         Some(visitedNodes :+ currentNode withFilter (_.fold.isDefined) map (_.fold.get))
       } else {
