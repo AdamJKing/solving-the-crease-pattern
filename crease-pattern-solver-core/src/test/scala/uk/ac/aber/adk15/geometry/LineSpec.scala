@@ -2,6 +2,9 @@ package uk.ac.aber.adk15.geometry
 
 import uk.ac.aber.adk15.CommonFlatSpec
 
+/**
+  * Tests for [[Line]]
+  */
 class LineSpec extends CommonFlatSpec {
 
   "Two lines that have the same position/gradient" should "align with each other" in {
@@ -55,7 +58,7 @@ class LineSpec extends CommonFlatSpec {
     val line                   = Line(a, b)
 
     // when
-    val modifiedLine = line mapValues (p => Point(p.x + 10, p.y + 10))
+    val modifiedLine = line flatMap (p => Point(p.x + 10, p.y + 10))
 
     // then
     modifiedLine shouldBe Line(modifiedA, modifiedB)

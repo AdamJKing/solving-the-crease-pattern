@@ -14,13 +14,6 @@ case class Point(x: Double, y: Double) {
 
   def canEqual(a: Any): Boolean = a.isInstanceOf[Point]
 
-  override def equals(that: Any): Boolean = canEqual(that) && {
-    val point = that.asInstanceOf[Point]
-    point.x == x && point.y == y
-  }
-
-  override def toString = f"{ $x% 6.1f, $y% 6.1f }"
-
   /**
     * The equation
     *
@@ -39,21 +32,43 @@ case class Point(x: Double, y: Double) {
     ((x - a.x) * (b.y - a.y)) - ((y - a.y) * (b.x - a.x))
   }
 
-  @deprecated
-  @inline final def compareTo(a: Point, b: Point): Double = {
-    ((x - a.x) * (b.y - a.y)) - ((y - a.y) * (b.x - a.x))
-  }
-
+  /**
+    * calculates the dot product of the two points
+    *
+    * @param p2 the second point
+    * @return the dot product
+    */
   @inline final def dotProduct(p2: Point): Double = (x * p2.x) + (y * p2.y)
 
+  /**
+    * arbitrarily negates original point by second point
+    *
+    * @param p2 point to negate this point by
+    * @return point A - point B
+    */
   @inline final def -(p2: Point): Point = Point(x - p2.x, y - p2.y)
 
+  /**
+    * Calculates the gradient between two points.
+    *
+    * Note: the gradient is directional and will change the (+-) sign based
+    * on which point is first
+    *
+    * @param p2 the second point
+    * @return the gradient between p and p2
+    */
   @inline final def gradientTo(p2: Point): Double = (p2.y - y, p2.x - x) match {
     case (a, 0)   => if (a > 0) PositiveInfinity else NegativeInfinity
     case (0, _)   => 0
     case (dy, dx) => dy / dx
   }
 
+  /**
+    * calculates the manhattan distance between two points
+    *
+    * @param p2 the second point
+    * @return the manhattan distance
+    */
   @inline final def distanceTo(p2: Point): Double = abs(x - p2.x) + abs(y - p2.y)
 
   /**
@@ -68,22 +83,10 @@ case class Point(x: Double, y: Double) {
     *
     * Source: http://stackoverflow.com/a/3307181
     *
-    * @param start the beginning of the line
-    * @param end the end of the line
+    * @param line the line to reflect over
     * @return the reflected point
     */
-  @deprecated
-  final def reflectedOver(start: Point, end: Point): Point = {
-    if (start.x == end.x) return Point(2 * (x + start.x), y)
-    if (start.y == end.y) return Point(x, 2 * (y + start.y))
-
-    lazy val m = end gradientTo start
-    lazy val c = start.y - m * start.x
-    lazy val d = abs((x + (y - c) * m) / (1 + pow(m, 2)))
-
-    Point(2 * d - x, 2 * d * m - y + 2 * c)
-  }
-
+  @inline
   def reflectedOver(line: Line): Point = {
     line match {
       case Line(a, b) =>
@@ -98,9 +101,26 @@ case class Point(x: Double, y: Double) {
     }
   }
 
+  /**
+    * Applies a constant to the point,
+    *
+    * @param constant the constant to multiply the point by
+    * @return (x * constant, y * constant)
+    */
   @inline final def applyConstant(constant: Double): Point = Point(constant * x, constant * y)
+
+  override def equals(other: Any): Boolean = other match {
+    case Point(otherX, otherY) => x == otherX && y == otherY
+    case _                     => false
+  }
+
+  override def toString = f"{ $x% 6.1f, $y% 6.1f }"
+
 }
 
+/**
+  * A specialised ordering for ordering points by their distance from origin (0, 0)
+  */
 object DistanceFromOriginPointOrdering extends Ordering[Point] {
-  override def compare(a: Point, b: Point): Int = (a.x compareTo b.x) + (a.y compareTo b.y)
+  override def compare(a: Point, b: Point): Int = math.signum((a.x + a.y) + (b.x + b.y)).toInt
 }

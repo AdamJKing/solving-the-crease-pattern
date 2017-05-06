@@ -6,6 +6,10 @@ import uk.ac.aber.adk15.controllers._
 import uk.ac.aber.adk15.executors.ant._
 import uk.ac.aber.adk15.view.{EventBus, ProgressPane}
 
+/**
+  * Guice module that defines the implementations for our interfaces.
+  *
+  */
 class ApplicationModule extends AbstractModule with ScalaModule {
   override def configure(): Unit = {
     bind[AntBasedFoldExecutor].to[AntBasedFoldExecutorImpl]

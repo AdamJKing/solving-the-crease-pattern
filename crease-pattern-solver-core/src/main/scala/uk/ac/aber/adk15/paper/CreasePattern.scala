@@ -1,23 +1,23 @@
 package uk.ac.aber.adk15.paper
 
 import uk.ac.aber.adk15.geometry.Point
-import uk.ac.aber.adk15.paper.fold.PaperEdgeHelpers._
+import uk.ac.aber.adk15.paper.fold.Fold.Helpers._
 import uk.ac.aber.adk15.paper.fold.{Fold, FoldContext, FoldSelection, OngoingFold}
 
 /**
-  * Represents a single fold-able Origami model.
-  *
-  * TODO: out of date
-  * Model consists of layers which can be manipulated. It's worth noting that this
-  * class performs no actual validation or verification of the folds being performed.
-  * Instead to find out which folds are valid you should use the
-  * [[uk.ac.aber.adk15.services.FoldSelectionService]].
+  * Represents a single fold-able Origami model. A model must have 1
+  * or more paper layers in order to be valid.
   *
   * @param paperLayers the layers of paper that form the paper model
   */
 case class CreasePattern(private val paperLayers: List[PaperLayer]) {
   require(paperLayers.nonEmpty, "Crease pattern cannot have 0 layers")
 
+  /**
+    * Lists the folds that are currently considered 'foldable' in the crease-pattern
+    *
+    * @return all foldable folds in the crease-pattern
+    */
   def availableFolds: Set[Fold] = new FoldSelection(layers).getAvailableOperations
 
   /**
@@ -35,7 +35,7 @@ case class CreasePattern(private val paperLayers: List[PaperLayer]) {
     * please consult the report/documentation.
     *
     * @param fold the edge to fold along
-    * @return a new folded model
+    * @return an on-going fold that must be creased
     */
   def fold(fold: Fold): OngoingFold = {
     require(availableFolds contains fold,
@@ -45,20 +45,30 @@ case class CreasePattern(private val paperLayers: List[PaperLayer]) {
     new OngoingFold(foldContext)
   }
 
+  /**
+    * Convenience operator for applying a given fold.
+    *
+    * @usecase MODEL <~~ FOLD
+    *
+    * @param fold the edge to fold along
+    * @return the new folded model
+    */
   @inline final def <~~(fold: Fold): CreasePattern = (this fold fold).crease
 
+  /**
+    * @return the layers in the crease-pattern
+    */
   def layers: List[PaperLayer] = paperLayers
 
-  def hasRemainingFolds: Boolean = (layers map (_.foldable)) forall (_.nonEmpty)
-
   /**
-    * Returns the number of layers in the crease-pattern.
+    * Equivalent to `isEmpty`, tests if the crease-pattern has any
+    * assigned creases left.
     *
-    * Useful for testing.
+    * Remaining folds are not necessarily foldable.
     *
-    * @return the number of layers in the pattern
+    * @return the un-creased folds in the pattern
     */
-  def size: Int = layers.length
+  def hasRemainingFolds: Boolean = (layers map (_.foldable)) exists (_.nonEmpty)
 
   override def equals(obj: Any): Boolean = obj match {
     case other: CreasePattern => other.layers == this.layers
@@ -76,6 +86,12 @@ case class CreasePattern(private val paperLayers: List[PaperLayer]) {
   */
 object CreasePattern {
 
+  /**
+    * Generates an empty crease-pattern, which is equivalent to
+    * an empty piece of paper.
+    *
+    * @return blank crease-pattern
+    */
   def empty: CreasePattern = CreasePattern from PaperLayer(
     Point(0, 0) -- Point(100, 0),
     Point(100, 0) -- Point(0, 100),

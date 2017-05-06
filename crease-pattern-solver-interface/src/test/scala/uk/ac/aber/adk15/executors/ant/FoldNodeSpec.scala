@@ -6,7 +6,7 @@ import org.scalatest.Inside
 import uk.ac.aber.adk15.CommonFlatSpec
 import uk.ac.aber.adk15.geometry.Point
 import uk.ac.aber.adk15.paper.CreasePattern
-import uk.ac.aber.adk15.paper.fold.PaperEdgeHelpers._
+import uk.ac.aber.adk15.paper.fold.Fold.Helpers._
 import uk.ac.aber.adk15.paper.fold.{Fold, OngoingFold}
 
 class FoldNodeSpec extends CommonFlatSpec with Inside {

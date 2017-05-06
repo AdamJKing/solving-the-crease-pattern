@@ -4,6 +4,10 @@ import uk.ac.aber.adk15.CommonFlatSpec
 import uk.ac.aber.adk15.paper.constants.FoldedModels._
 import uk.ac.aber.adk15.paper.constants.UnfoldedCreasePatterns._
 
+/**
+  * [[CreasePattern]] complexity tests, used to validate
+  * that the crease-pattern folds correctly with 'real' data.
+  */
 class CreasePatternComplexitySpec extends CommonFlatSpec {
   "A simple crease pattern" should "fold accurately and correctly" in {
     // given

@@ -49,10 +49,16 @@ class ApplicationViewController(private val mainController: ApplicationControlle
                                 private val progressPane: ProgressPane,
                                 private val menu: Pane,
                                 private val creasePatternParser: CreasePatternParser) {
+
   private val logger = Logger[ApplicationViewController]
 
+  // the crease-pattern currently loaded
   private var creasePattern: Option[CreasePattern] = None
-  private var currentConfig: Config                = DefaultConfig
+  // the config currently loaded
+  private var currentConfig: Config = DefaultConfig
+
+  // add the progress pane to the main container
+  container.children add progressPane
 
   /**
     * The entry point for the execution of the application.
@@ -69,8 +75,6 @@ class ApplicationViewController(private val mainController: ApplicationControlle
     // as it doesn't yet contain any content (and therefore won't scale automatically)
     HBox.setHgrow(progressPane, Priority.Always)
 
-    container.children add progressPane
-
     creasePattern match {
       case Some(cp) =>
         mainController.execute(cp, currentConfig) onComplete {
@@ -86,9 +90,8 @@ class ApplicationViewController(private val mainController: ApplicationControlle
       case None =>
         logger info "No crease pattern was loaded."
         showNoCreasePatternLoadedMessage()
+        enableAll(menu)
     }
-
-    enableAll(menu)
   }
 
   /**
@@ -107,10 +110,13 @@ class ApplicationViewController(private val mainController: ApplicationControlle
     val fileChooser = new FileChooser
     val file        = fileChooser showOpenDialog (ownerWindow = ApplicationView)
 
-    creasePattern = creasePatternParser parseFile file
+    // if the user presses 'cancel' on the dialogue, it will be null
+    if (file != null) {
+      creasePattern = creasePatternParser parseFile file
 
-    if (creasePattern.isEmpty) showNoCreasePatternLoadedMessage()
-    else loadedCreasePatternLabel.text = file.getName
+      if (creasePattern.isEmpty) showNoCreasePatternLoadedMessage()
+      else loadedCreasePatternLabel.text = file.getName
+    }
   }
 
   /**
@@ -120,10 +126,15 @@ class ApplicationViewController(private val mainController: ApplicationControlle
     * @param outcome the result returned from the execution function.
     */
   private def handleOutcome(outcome: ExecutionResult): Unit = outcome match {
-    case SuccessfulExecution(result, creasePattern) =>
-      new ResultsView(result, creasePattern).showAndWait()
+    case result @ SuccessfulExecution(foldOrderResults, finalModel) =>
+      logger info s"Execution time: ${result.executionTimeInMilliseconds}ms"
+      progressPane.refresh()
+      new ResultsView(foldOrderResults, finalModel).showAndWait()
 
-    case FailedExecution() => showNoFoldOrderFoundMessage()
+    case result: FailedExecution =>
+      logger info s"Execution time: ${result.executionTimeInMilliseconds}ms"
+      progressPane.refresh()
+      showNoFoldOrderFoundMessage()
   }
 
   /**

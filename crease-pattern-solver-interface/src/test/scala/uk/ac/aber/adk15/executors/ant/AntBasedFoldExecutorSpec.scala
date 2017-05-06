@@ -9,7 +9,7 @@ import uk.ac.aber.adk15.geometry.Point
 import uk.ac.aber.adk15.model.Config
 import uk.ac.aber.adk15.paper.CreasePattern
 import uk.ac.aber.adk15.paper.fold.Fold
-import uk.ac.aber.adk15.paper.fold.PaperEdgeHelpers._
+import uk.ac.aber.adk15.paper.fold.Fold.Helpers._
 
 class AntBasedFoldExecutorSpec extends CommonAsyncSpec {
 

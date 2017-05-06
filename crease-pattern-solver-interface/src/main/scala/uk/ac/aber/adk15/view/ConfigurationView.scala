@@ -7,10 +7,18 @@ import scalafx.geometry.Insets
 import scalafx.scene.control._
 import scalafx.scene.layout.GridPane
 
+/**
+  * Object representing the configuration menu.
+  * Currently defines the following config options;
+  *    * Maximum threads
+  */
 object ConfigurationView {
 
   def showConfigDialog(default: Config = Config.Constants.DefaultConfig): Config = {
 
+    // create a new JFX dialog
+    // this is a powerful JFX tool as it allows us to return
+    // an object instance when the user closes the window
     val dialog = new Dialog[Option[Config]]() {
       initOwner(ApplicationView)
       title = "Configuration"
@@ -39,12 +47,7 @@ object ConfigurationView {
 
     val result = dialog.showAndWait()
 
-    //
-    // This code is a little bit bizarre, on the surface it seems to only return
-    // the exact same thing as `result`.
-    // In actual fact it's allowing ScalaFX to do some strange type magic and frankly
-    // won't compile if we don't do this.
-    //
+    // extract our configuration instance from the dialogues output
     result match {
       case Some(Some(config: Config)) => config
       case Some(_)                    => default

@@ -5,7 +5,7 @@ import uk.ac.aber.adk15.geometry.{Line, Point}
 /**
   * A class for representing to relationship between two points on a piece of paper.
   *
-  * This line is directionless, meaning `start` and `end` can be swapped arbitrarily.
+  * Currently used for associating the fold elements in order to cleanup the API
   *
   */
 case class Fold(line: Line, foldType: FoldType) {
@@ -35,30 +35,28 @@ case class Fold(line: Line, foldType: FoldType) {
 
   override def toString = s"${line.a} $foldType ${line.b}"
 
-  def points = Set(line.a, line.b)
-
-  def crease: Fold = foldType match {
-    case PaperBoundary | CreasedFold => this
-    case MountainFold | ValleyFold   => Fold(line, CreasedFold)
-  }
-
-  def contains(point: Point): Boolean  = points contains point
-  def flatMap(f: Point => Point): Fold = Fold(line mapValues f, foldType)
 }
 
-/**
-  * Contains implicit definitions of operations as
-  * shorthand for describing folds in a crease pattern.
-  *
-  * ie. Point(0, 0) /\ Point(10, 10) would be a mountain
-  * fold between two points.
-  *
-  */
-object PaperEdgeHelpers {
-  final implicit class FoldOps(val start: Point) extends AnyVal {
-    @inline def /\(end: Point) = Fold(Line(start, end), MountainFold)
-    @inline def \/(end: Point) = Fold(Line(start, end), ValleyFold)
-    @inline def ~~(end: Point) = Fold(Line(start, end), CreasedFold)
-    @inline def --(end: Point) = Fold(Line(start, end), PaperBoundary)
+object Fold {
+
+  /**
+    * Contains implicit definitions of operations as
+    * shorthand for describing folds in a crease pattern.
+    *
+    * ie. Point(0, 0) /\ Point(10, 10) would be a mountain
+    * fold between two points.
+    *
+    */
+  object Helpers {
+    final implicit class FoldOps(val start: Point) extends AnyVal {
+      @inline def /\(end: Point) = Fold(Line(start, end), MountainFold)
+
+      @inline def \/(end: Point) = Fold(Line(start, end), ValleyFold)
+
+      @inline def ~~(end: Point) = Fold(Line(start, end), CreasedFold)
+
+      @inline def --(end: Point) = Fold(Line(start, end), PaperBoundary)
+    }
+
   }
 }

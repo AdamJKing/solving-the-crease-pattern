@@ -2,6 +2,9 @@ package uk.ac.aber.adk15.geometry
 
 import uk.ac.aber.adk15.CommonFlatSpec
 
+/**
+  * Tests for [[Polygon]]
+  */
 class PolygonSpec extends CommonFlatSpec {
 
   private val RectangularPolygon = Rectangle(Point(0, 20), Point(50, 0))

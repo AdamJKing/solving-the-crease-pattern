@@ -1,12 +1,16 @@
 package uk.ac.aber.adk15.paper
 
 import org.mockito.BDDMockito.given
-import org.mockito.Mockito.verify
+import org.mockito.Matchers.any
+import org.mockito.Mockito._
 import uk.ac.aber.adk15.CommonFlatSpec
 import uk.ac.aber.adk15.geometry.{Line, Point, Polygon}
 import uk.ac.aber.adk15.paper.PaperLayer._
 import uk.ac.aber.adk15.paper.fold._
 
+/**
+  * Tests for [[PaperLayer]]
+  */
 class PaperLayerSpec extends CommonFlatSpec {
 
   "Segmenting a paper layer into two parts" should "yield the proper results" in {
@@ -43,25 +47,29 @@ class PaperLayerSpec extends CommonFlatSpec {
     rightSide shouldBe Some(PaperLayer(Set(rightShape), Map(segmentLine -> CreasedFold)))
   }
 
-//  "Rotating over a given axis" should "should yield expected results" in {
-//    // given
-//    val rotationLine  = mock[Line]
-//    val shapeToRotate = mock[Polygon]
-//    val lineToRotate  = Line(shapeToRotate, mock[Point])
-//    val folds         = Map(lineToRotate -> MountainFold)
-//    val paperLayer    = PaperLayer(Set(Polygon(lineToRotate.a, lineToRotate.b)), folds)
-//
-//    given(lineToRotate.a reflectedOver rotationLine) willReturn lineToRotate.a
-//    given(lineToRotate.b reflectedOver rotationLine) willReturn lineToRotate.b
-//
-//    // when
-//    val rotatedPaperLayer = paperLayer rotateAround rotationLine
-//
-//    // then
-//    verify(pointToRotate, times(2)) reflectedOver rotationLine
-//    rotatedPaperLayer.valleyFolds should contain(Fold(lineToRotate, ValleyFold))
-//    rotatedPaperLayer.mountainFolds should not contain Fold(lineToRotate, ValleyFold)
-//  }
+  "Rotating over a given axis" should "should yield expected results" in {
+    // given
+    val rotationLine  = mock[Line]
+    val shapeToRotate = mock[Polygon]
+    val points        = Set(mock[Point], mock[Point], mock[Point])
+    val lineToRotate  = Line(mock[Point], mock[Point])
+    val folds         = Map(lineToRotate -> MountainFold)
+    val paperLayer    = new PaperLayer(Set(shapeToRotate), folds)
+
+    given(shapeToRotate.points) willReturn points
+    given(shapeToRotate flatMap any[(Point) => Point]()).willCallRealMethod()
+    points foreach (point => given(point reflectedOver rotationLine) willReturn mock[Point])
+    given(lineToRotate.a reflectedOver rotationLine) willReturn lineToRotate.a
+    given(lineToRotate.b reflectedOver rotationLine) willReturn lineToRotate.b
+
+    // when
+    val rotatedPaperLayer = paperLayer rotateAround rotationLine
+
+    // then
+    points foreach (point => verify(point) reflectedOver rotationLine)
+    rotatedPaperLayer.valleyFolds should contain(Fold(lineToRotate, ValleyFold))
+    rotatedPaperLayer.mountainFolds should not contain Fold(lineToRotate, ValleyFold)
+  }
 
   "Merging two correct layers" should "yield the expected results" in {
     // given

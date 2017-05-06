@@ -7,6 +7,9 @@ import uk.ac.aber.adk15.CommonFlatSpec
 import uk.ac.aber.adk15.geometry.Line
 import uk.ac.aber.adk15.paper.{CreasePattern, PaperLayer}
 
+/**
+  * Tests for [[OngoingFold]]
+  */
 class OngoingFoldSpec extends CommonFlatSpec {
 
   override def beforeEach(): Unit = {
@@ -24,7 +27,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     given(foldContext.foldableLayers) willReturn Map(0   -> expectedTopLayer)
     given(foldContext.unaffectedLayers) willReturn Map(0 -> expectedBottomLayer)
     given(foldContext.foldLine) willReturn foldLine
-    given(foldContext.foldAbove) willReturn true
+    given(foldContext.shouldFoldAbove) willReturn true
 
     // when
     val creasePattern = new OngoingFold(foldContext).crease
@@ -50,7 +53,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     given(foldContext.foldableLayers) willReturn Map(0   -> expectedBottomLayer)
     given(foldContext.unaffectedLayers) willReturn Map(0 -> expectedTopLayer)
     given(foldContext.foldLine) willReturn foldLine
-    given(foldContext.foldAbove) willReturn false
+    given(foldContext.shouldFoldAbove) willReturn false
     given(expectedBottomLayer rotateAround foldLine) willReturn expectedBottomLayer
 
     // when
@@ -79,7 +82,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     given(foldContext.unaffectedLayers) willReturn Map(0 -> expectedBottomLayer,
                                                        1 -> expectedUnaffectedLayer)
     given(foldContext.foldLine) willReturn foldLine
-    given(foldContext.foldAbove) willReturn true
+    given(foldContext.shouldFoldAbove) willReturn true
 
     given(expectedUnaffectedLayer mergeWith expectedTopLayer) willReturn None
     given(expectedUnaffectedLayer mergeWith expectedBottomLayer) willReturn None
@@ -111,7 +114,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     given(foldContext.unaffectedLayers) willReturn Map(1 -> expectedTopLayer,
                                                        0 -> expectedUnaffectedLayer)
     given(foldContext.foldLine) willReturn foldLine
-    given(foldContext.foldAbove) willReturn false
+    given(foldContext.shouldFoldAbove) willReturn false
 
     given(expectedUnaffectedLayer mergeWith expectedTopLayer) willReturn None
     given(expectedUnaffectedLayer mergeWith expectedBottomLayer) willReturn None
@@ -145,7 +148,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     given(foldContext.unaffectedLayers) willReturn Map(1 -> expectedBottomLayer,
                                                        0 -> unaffectedMergeableLayer)
     given(foldContext.foldLine) willReturn foldLine
-    given(foldContext.foldAbove) willReturn true
+    given(foldContext.shouldFoldAbove) willReturn true
 
     given(expectedTopLayer rotateAround foldLine) willReturn expectedTopLayer
 
@@ -180,7 +183,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     given(foldContext.unaffectedLayers) willReturn Map(0 -> expectedTopLayer,
                                                        1 -> unaffectedMergeableLayer)
     given(foldContext.foldLine) willReturn foldLine
-    given(foldContext.foldAbove) willReturn false
+    given(foldContext.shouldFoldAbove) willReturn false
 
     given(expectedTopLayer rotateAround foldLine) willReturn expectedTopLayer
 
@@ -218,7 +221,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     given(foldContext.foldableLayers) willReturn foldableLayers
     given(foldContext.unaffectedLayers) willReturn unaffectedLayers
     given(foldContext.foldLine) willReturn foldLine
-    given(foldContext.foldAbove) willReturn true
+    given(foldContext.shouldFoldAbove) willReturn true
 
     unaffectedLayers.values foreach (layer =>
       given(layer mergeWith any[PaperLayer]) willReturn None)
@@ -259,7 +262,7 @@ class OngoingFoldSpec extends CommonFlatSpec {
     given(foldContext.foldableLayers) willReturn foldableLayers
     given(foldContext.unaffectedLayers) willReturn unaffectedLayers
     given(foldContext.foldLine) willReturn foldLine
-    given(foldContext.foldAbove) willReturn false
+    given(foldContext.shouldFoldAbove) willReturn false
 
     unaffectedLayers.values foreach (layer =>
       given(layer mergeWith any[PaperLayer]) willReturn None)

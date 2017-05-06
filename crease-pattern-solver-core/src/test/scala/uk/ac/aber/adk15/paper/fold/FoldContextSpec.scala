@@ -5,6 +5,9 @@ import uk.ac.aber.adk15.CommonFlatSpec
 import uk.ac.aber.adk15.geometry.Line
 import uk.ac.aber.adk15.paper.{CreasePattern, PaperLayer}
 
+/**
+  * Tests for [[FoldContext]]
+  */
 class FoldContextSpec extends CommonFlatSpec {
 
   "The fold context for a mountain fold" should "correctly identify fold layers" in {

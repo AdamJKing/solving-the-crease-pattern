@@ -2,6 +2,9 @@ package uk.ac.aber.adk15.geometry
 
 import org.scalatest.{FlatSpec, Matchers}
 
+/**
+  * Tests for [[Point]]
+  */
 class PointSpec extends FlatSpec with Matchers {
 
   "Two points with the same X, Y values" should "be equal" in {
@@ -13,22 +16,22 @@ class PointSpec extends FlatSpec with Matchers {
   }
 
   "A point" should "be correctly comparable to a line" in {
-    Point(0, 1) compareTo (Point(0, 0), Point(1, 1)) should be < 0.0
-    Point(1, 0) compareTo (Point(0, 0), Point(1, 1)) should be > 0.0
-    Point(0, 0) compareTo (Point(0, 0), Point(1, 1)) should be(0)
+    Point(0, 1) compareTo Line(Point(0, 0), Point(1, 1)) should be < 0.0
+    Point(1, 0) compareTo Line(Point(0, 0), Point(1, 1)) should be > 0.0
+    Point(0, 0) compareTo Line(Point(0, 0), Point(1, 1)) should be(0)
   }
 
   "A point" should "be reflect-able across a line" in {
-    val pointA = Point(100, 0) reflectedOver (Point(0, 0), Point(100, -100))
+    val pointA = Point(100, 0) reflectedOver Line(Point(0, 0), Point(100, -100))
     pointA should be(Point(0, -100))
 
-    val pointB = Point(0, 0) reflectedOver (Point(100, 0), Point(0, -100))
+    val pointB = Point(0, 0) reflectedOver Line(Point(100, 0), Point(0, -100))
     pointB should be(Point(100, -100))
 
-    val pointC = Point(0, 50) reflectedOver (Point(50, 0), Point(50, 100))
+    val pointC = Point(0, 50) reflectedOver Line(Point(50, 0), Point(50, 100))
     pointC should be(Point(100, 50))
 
-    val pointD = Point(50, 0) reflectedOver (Point(0, 50), Point(100, 50))
+    val pointD = Point(50, 0) reflectedOver Line(Point(0, 50), Point(100, 50))
     pointD should be(Point(50, 100))
   }
 

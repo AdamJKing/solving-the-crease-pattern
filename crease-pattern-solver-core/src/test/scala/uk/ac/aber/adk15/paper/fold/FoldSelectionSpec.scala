@@ -8,7 +8,7 @@ import uk.ac.aber.adk15.paper.constants.UnfoldedCreasePatterns.{
   MediumComplexityCreasePattern,
   MediumFolds
 }
-import uk.ac.aber.adk15.paper.fold.PaperEdgeHelpers._
+import uk.ac.aber.adk15.paper.fold.Fold.Helpers._
 
 class FoldSelectionSpec extends CommonFlatSpec {
 
@@ -154,10 +154,10 @@ class FoldSelectionSpec extends CommonFlatSpec {
     )
 
     availableOperationsB shouldBe Set(
-      Point(25, 25) \/ Point(50, 0)
+      Point(25, 25) /\ Point(0, 50)
     )
 
-    (foldedCreasePatternB <~~ Point(25, 25) \/ Point(50, 0)).hasRemainingFolds shouldBe false
+    (foldedCreasePatternB <~~ Point(25, 25) /\ Point(0, 50)).hasRemainingFolds shouldBe false
 
     new FoldSelection(
       (MediumComplexityCreasePattern /: List(
