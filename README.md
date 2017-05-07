@@ -21,8 +21,12 @@ fold-order for the folds in the crease pattern.
 ## 2 Prerequisites
 
 To build and run this application you will need the following:
-* A valid JVM installation ([Java Download](https://java.com/en/download/))
-* The Maven build tool ([Maven download](https://maven.apache.org/download.cgi))
+
+* You will need either of the following:
+  * [Oracle JDK (comes prepackaged with JFX)](http://www.oracle.com/technetwork/java/javase/downloads/index-jsp-138363.html)
+  * [OpenJDK](http://openjdk.java.net/) and [OpenJFX](http://openjdk.java.net/projects/openjfx/)
+
+* [The Maven build tool](https://maven.apache.org/download.cgi)
 
 On a linux system, these dependencies can be installed from the command-line or using your favoured
 package management tool.
