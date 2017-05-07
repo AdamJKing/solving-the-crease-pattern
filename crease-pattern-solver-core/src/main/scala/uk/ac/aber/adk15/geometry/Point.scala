@@ -86,7 +86,6 @@ case class Point(x: Double, y: Double) {
     * @param line the line to reflect over
     * @return the reflected point
     */
-  @inline
   def reflectedOver(line: Line): Point = {
     line match {
       case Line(a, b) =>

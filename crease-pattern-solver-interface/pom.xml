@@ -5,11 +5,11 @@
     <parent>
         <artifactId>crease-pattern-solver</artifactId>
         <groupId>uk.ac.aber.adk15</groupId>
-        <version>1.6-SNAPSHOT</version>
+        <version>2.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>crease-pattern-solver-interface</artifactId>
-    <version>1.5-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
     <name>crease-pattern-solver-interface</name>
     <packaging>jar</packaging>
 

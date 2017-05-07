@@ -142,7 +142,7 @@ class FoldSelection(private val layers: List[PaperLayer]) {
                 case Fold(line, MountainFold) =>
                   (fold.line alignsWith line) && fold.foldType == ValleyFold
 
-                case Fold(line, ValleyFold) =>
+                case Fold(line, _) =>
                   (fold.line alignsWith line) && fold.foldType == MountainFold
               })
 

@@ -135,6 +135,7 @@ class OngoingFold(private val foldContext: FoldContext) {
               repair(unaffectedLayers, ys) :+ yLayer
           }
         }
+      case _ => throw new IllegalStateException("Couldn't unpack layers for repair.")
     }
   }
 }
