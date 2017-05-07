@@ -24,9 +24,12 @@ To build and run this application you will need the following:
 * A valid JVM installation ([Java Download](https://java.com/en/download/))
 * The Maven build tool ([Maven download](https://maven.apache.org/download.cgi))
 
+On a linux system, these dependencies can be installed from the command-line or using your favoured
+package management tool.
+
 ## 3 How to Build
 
-To build the entire application with tests:
+To build the entire application with tests run these commands in the project root:
 ```
 mvn clean install
 ```
