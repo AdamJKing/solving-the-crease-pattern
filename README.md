@@ -52,6 +52,13 @@ cd {REPOSITORY_ROOT}/crease-pattern-solver-interface/
 java -jar ./target/crease-pattern-solver-interface-2.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 
+If you wish to view the animations at a slower place you can use the `slowdown` argument:
+```
+cd {REPOSITORY_ROOT}/crease-pattern-solver-interface/
+java -Dslowdown={DELAY_IN_SECONDS} -jar ./target/crease-pattern-solver-interface-2.0-SNAPSHOT-jar-with-dependencies.jar
+```
+Where the supplied integer `DELAY_IN_SECONDS` is the number of seconds to delay each iteration by.
+
 ### 4.1 Prepackaged Crease Pattern Files
 
 The application comes with some prepackaged crease pattern files you may use with the application.

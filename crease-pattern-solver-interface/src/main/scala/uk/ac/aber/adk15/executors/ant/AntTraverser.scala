@@ -52,11 +52,12 @@ class AntTraverserImpl @Inject()(diceRollService: DiceRollService,
   @tailrec
   protected final def traverse(currentNode: FoldNode,
                                visitedNodes: List[FoldNode]): Option[List[Fold]] = {
+    // stop processing when solution found
+    if (solutionFound.get()) return None
 
-    // Arbitrarily slow down the execution of the algorithm
-    // this should really be a configuration option
-    // !! added for demonstrative purposes !!
-    Thread.sleep(1000L)
+    // arbitrarily slow down the application for demonstrative purposes
+    if (System.getProperty("slowdown") != null)
+      Thread.sleep(System.getProperty("slowdown").toInt * 1000)
 
     val isEndState = currentNode.children.isEmpty
 

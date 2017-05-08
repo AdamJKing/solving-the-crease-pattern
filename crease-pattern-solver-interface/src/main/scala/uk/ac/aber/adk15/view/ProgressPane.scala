@@ -26,7 +26,7 @@ class ProgressPane @Inject()(eventBus: EventBus[AntTraversalEvent])
   // this is the size the canvas will aim to be in the application
   // this is currently hardcoded because it is easier than trying
   // to dynamically gauge what size we should use at boot
-  private val idealCanvasSize = 100.0
+  private val idealCanvasSize = 200.0
 
   // offset is used to create margins for the animations
   private val offset           = idealCanvasSize / 10.0
