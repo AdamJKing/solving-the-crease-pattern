@@ -46,8 +46,6 @@ class ResultsView(foldOrder: Seq[Fold], originalPattern: CreasePattern) extends 
 
   onCloseRequest = handle(Platform.exit())
 
-//  width.onChange((_, _, newWidth) => CanvasSize set newWidth.doubleValue())
-
   /**
     * Specialised cell for the JFX list view
     */
